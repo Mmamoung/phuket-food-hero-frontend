@@ -676,7 +676,7 @@ function getAnalysisPageHtml() {
 async function loadSchoolDashboard() {
     loadContent(getSchoolDashboardHtml());
     try {
-        const response = await authenticatedFetch('http://localhost:5000/api/waste/posts');
+        const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/posts');
         const data = await response.json();
         renderDataBlocks(data, '#schoolDataBlocks');
     }
@@ -689,7 +689,7 @@ async function loadSchoolDashboard() {
 async function loadFarmerDashboard(filters = {}) {
     loadContent(getFarmerDashboardHtml());
     try {
-        let url = new URL('http://localhost:5000/api/waste/filter');
+        let url = new URL('https://phuket-food-hero-api.onrender.com/api/waste/filter');
         Object.keys(filters).forEach(key => {
             if (filters[key]) url.searchParams.append(key, filters[key]);
         });
