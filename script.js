@@ -31,7 +31,7 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
 
     try {
         // Attempt to register first
-        response = await authenticatedFetch('http://localhost:5000/api/auth/register', {
+        response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(authData)
@@ -54,7 +54,7 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
         } else if (response.status === 400 && result.msg === 'User นี้ลงทะเบียนแล้ว') {
             // User already registered, attempt to log in
             console.log('User already registered, attempting login...');
-            response = await authenticatedFetch('http://localhost:5000/api/auth/login', {
+            response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }) // Only email and password for login
@@ -93,7 +93,7 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
 // --- Helper function for generic login attempt ---
 async function genericLoginAttempt(email, password) {
     try {
-        const response = await authenticatedFetch('http://localhost:5000/api/auth/login', {
+        const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -211,7 +211,7 @@ function showConfirmationModal(message, onConfirm) {
 async function deleteWasteEntry(id) {
     console.log('Frontend attempting to delete ID:', id);
     try {
-        const response = await authenticatedFetch(`http://localhost:5000/api/waste/${id}`, {
+        const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/${id}`, {
             method: 'DELETE'
         });
 
@@ -341,7 +341,7 @@ function loadContent(contentHtml) {
             const formData = new FormData(addWasteForm);
 
             try {
-                const response = await authenticatedFetch('http://localhost:5000/api/waste/add', {
+                const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/add', {
                     method: 'POST',
                     body: formData
                 });
@@ -528,7 +528,6 @@ function getSchoolDashboardHtml() {
         <div class="school-dashboard-container">
             <div class="dashboard-content-area">
                 <div class="sidebar">
-                    <p style="color: #666; font-size:0.9em; text-align: center; padding: 10px;">(ฟังก์ชันกรองจะอยู่บนหน้าของเกษตรกร)</p>
                 </div>
                 <div class="main-display-area">
                     <div class="data-block-wrapper" id="schoolDataBlocks">
@@ -725,7 +724,7 @@ async function applyFarmerFilters() {
 
 async function loadPostDetails(postId) {
     try {
-        const response = await authenticatedFetch(`http://localhost:5000/api/waste/posts/${postId}`);
+        const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/posts/${postId}`);
         const postData = await response.json();
         loadContent(getPostDetailsHtml(postData));
     } catch (error) {
@@ -737,7 +736,7 @@ async function loadPostDetails(postId) {
 async function loadAnalysisPage() {
     loadContent(getAnalysisPageHtml());
     try {
-        const response = await authenticatedFetch('http://localhost:5000/api/waste/analyze');
+        const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/analyze');
         const { analysis, rawData } = await response.json(); // Get both analysis and rawData
 
         if (analysis.length === 0) {
