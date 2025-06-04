@@ -76,7 +76,8 @@ body {
     justify-content: center; /* Center content vertically */
     align-items: center; /* Center content horizontally */
     padding: 40px 20px; /* Adjust padding as needed */
-    background-image: url('images/phukettrash'); /* Placeholder background image */
+    /* TODO: Replace with your actual background image path */
+    background-image: url('images/phukettrash.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
