@@ -148,7 +148,7 @@ async function renderDataBlocks(data, targetWrapperId) {
         // It should return user data including the 'stars' field.
         const profileResponse = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/auth/profile/${userId}`);
         const profileData = await profileResponse.json();
-        userStars = profileData.stars || 0;
+        userStars = profileData.stars || 1;
     } catch (error) {
         console.error('Failed to fetch user stars:', error);
     }
