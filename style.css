@@ -76,7 +76,7 @@ body {
     justify-content: center; /* Center content vertically */
     align-items: center; /* Center content horizontally */
     padding: 40px 20px; /* Adjust padding as needed */
-    background-image: url('images/phukettrash.jpg'); /* Placeholder background image */
+    background-image: url('images/phukettrash'); /* Placeholder background image */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -401,6 +401,25 @@ body {
     background-color: #c82333;
 }
 
+/* Receive Waste Button */
+.receive-waste-button {
+    background-color: #00bcd4; /* Cyan/light blue for receive */
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    margin-right: 10px; /* Space from details */
+}
+
+.receive-waste-button:hover {
+    background-color: #0097a7;
+}
+
+
 .dashboard-buttons {
     display: flex;
     justify-content: space-between;
@@ -426,7 +445,7 @@ body {
     background-color: #0056b3;
 }
 
-/* NEW: Analysis button */
+/* Analysis button */
 .analysis-button {
     background-color: #28a745; /* Green color */
     color: var(--light-text);
@@ -443,6 +462,44 @@ body {
 
 .analysis-button:hover {
     background-color: #218838;
+}
+
+/* Edit Profile button */
+.edit-profile-button {
+    background-color: #ffc107; /* Yellow color */
+    color: var(--dark-text); /* Dark text for yellow background */
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.edit-profile-button:hover {
+    background-color: #e0a800;
+}
+
+/* Knowledge Button */
+.knowledge-button {
+    background-color: #17a2b8; /* Teal color */
+    color: var(--light-text);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.knowledge-button:hover {
+    background-color: #138496;
 }
 
 
@@ -614,6 +671,16 @@ body {
     font-size: 1.5em;
     font-weight: 700;
 }
+
+/* User Stars display */
+.user-stars {
+    color: #00FF00; /* Green color for stars */
+    font-size: 1.2em;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
 
 .filter-group {
     width: 100%;
@@ -801,7 +868,7 @@ body {
     background-color: #5a6268;
 }
 
-/* NEW: Analysis Page Styles */
+/* Analysis Page Styles */
 .analysis-container {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
@@ -838,9 +905,193 @@ body {
 }
 
 
+/* Edit Profile Page Styles */
+.edit-profile-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.edit-profile-container h2 {
+    color: var(--light-text);
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.edit-profile-container form {
+    width: 100%;
+}
+
+.edit-profile-container .form-group label {
+    color: var(--light-text);
+}
+
+.edit-profile-container input[type="text"],
+.edit-profile-container input[type="tel"],
+.edit-profile-container input[type="email"],
+.edit-profile-container input[type="password"],
+.edit-profile-container select,
+.edit-profile-container textarea {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: var(--dark-text);
+}
+
+/* Knowledge Page Styles */
+.knowledge-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 900px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.knowledge-container h2 {
+    color: var(--light-text);
+    margin-bottom: 20px;
+    font-size: 2.2em;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.knowledge-content {
+    background-color: var(--header-bg);
+    border-radius: 10px;
+    padding: 25px;
+    width: 100%;
+    max-height: 50vh; /* Limit height and allow scrolling */
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    color: var(--dark-text);
+    text-align: left;
+    line-height: 1.6;
+}
+
+.knowledge-content h3 {
+    font-size: 1.5em;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    color: var(--primary-blue);
+}
+
+.knowledge-content ul, .knowledge-content ol {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+.knowledge-content li {
+    margin-bottom: 5px;
+}
+
+.knowledge-content a {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+.knowledge-content a:hover {
+    text-decoration: underline;
+}
+
+
+
 /* Responsive Design */
 @media (max-width: 768px) {
-    /* ... (Existing responsive styles for main page, login, add waste data, school dashboard) ... */
+    .main-question-text {
+        font-size: 1.5em;
+        margin-bottom: 30px;
+    }
+    .cards-and-descriptions-wrapper {
+        flex-direction: column; /* Stack cards vertically on smaller screens */
+        gap: 30px;
+    }
+    .card-with-description {
+        max-width: 90%; /* Make cards wider on smaller screens */
+    }
+    .card-image {
+        height: 250px;
+    }
+    .button {
+        font-size: 1.1em;
+        padding: 12px 25px;
+    }
+    .card-description-text {
+        font-size: 0.85em;
+    }
+
+    /* School Dashboard Responsive */
+    .school-dashboard-container {
+        padding: 10px;
+        height: auto;
+    }
+    .dashboard-content-area {
+        flex-direction: column;
+        height: auto;
+    }
+    .sidebar {
+        width: 100%;
+        border-radius: 15px 15px 0 0;
+        padding: 15px;
+    }
+    .main-display-area {
+        padding: 15px;
+    }
+    .dashboard-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .add-data-button,
+    .dashboard-buttons .back-button,
+    .analysis-button,
+    .edit-profile-button,
+    .knowledge-button {
+        max-width: 100%;
+    }
+
+    /* Add Waste Data Page Responsive */
+    .add-waste-container {
+        padding: 10px;
+    }
+    .add-waste-container h2 {
+        font-size: 1.8em;
+    }
+    .form-row {
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+    }
+    .upload-group {
+        width: 100%;
+        max-width: 300px;
+        height: 200px;
+    }
+    .form-fields-group {
+        width: 100%;
+        max-width: none;
+    }
+    .form-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .add-waste-container .back-button,
+    .add-waste-container .login-button {
+        max-width: 100%;
+    }
 
     /* Farmer Dashboard Responsive */
     .farmer-dashboard-container {
@@ -915,16 +1166,70 @@ body {
         font-size: 1.8em;
     }
     .chart-container {
-        height: 300px; /* Adjust height for smaller screens */
+        height: 300px;
+    }
+
+    /* Edit Profile Page Responsive */
+    .edit-profile-container {
+        padding: 15px;
+    }
+    .edit-profile-container h2 {
+        font-size: 1.8em;
+    }
+
+    /* Knowledge Page Responsive */
+    .knowledge-container {
+        padding: 15px;
+    }
+    .knowledge-container h2 {
+        font-size: 1.8em;
+    }
+    .knowledge-content {
+        padding: 15px;
+    }
+    .knowledge-content h3 {
+        font-size: 1.3em;
+    }
+    .knowledge-content p, .knowledge-content li {
+        font-size: 0.9em;
     }
 }
 
 @media (max-width: 480px) {
-    /* ... (Existing responsive styles for main page, login, add waste data, school dashboard) ... */
+    .main-question-text {
+        font-size: 1.2em;
+        margin-bottom: 20px;
+    }
+    .card-image {
+        height: 200px;
+    }
+    .button {
+        font-size: 1em;
+        padding: 10px 20px;
+    }
+    .card-description-text {
+        font-size: 0.8em;
+    }
 
+    /* School Dashboard Responsive */
     /* Farmer Dashboard Responsive */
     .farmer-dashboard-container .sidebar h3 {
         font-size: 1.3em;
+    }
+    .data-block {
+        flex-direction: column;
+        text-align: center;
+    }
+    .data-item-image {
+        margin-bottom: 10px;
+    }
+
+    /* Add Waste Data Page Responsive */
+    .add-waste-container h2 {
+        font-size: 1.5em;
+    }
+    .upload-button-label {
+        font-size: 1em;
     }
 
     /* Post Details Page Responsive */
@@ -941,5 +1246,15 @@ body {
     }
     .chart-container {
         height: 250px;
+    }
+
+    /* Edit Profile Page Responsive */
+    .edit-profile-container h2 {
+        font-size: 1.5em;
+    }
+
+    /* Knowledge Page Responsive */
+    .knowledge-container h2 {
+        font-size: 1.5em;
     }
 }
