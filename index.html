@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN for analysis graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -18,7 +19,7 @@
                 <span>123456@gmail.com</span>
             </div>
             <div class="sign-in">
-                <a href="#" id="signInLink">sign-in</a>
+                <a href="#" id="signInLink">sign-in</a> <!-- *** ตรวจสอบว่ามี id="signInLink" ตรงนี้ *** -->
             </div>
         </div>
         <div class="hero-section">
@@ -27,12 +28,16 @@
     </header>
 
     <main id="app-container" class="content-section">
-        </main>
+        <!-- Content will be loaded here by JavaScript -->
+    </main>
 
     <footer class="footer">
-        <p>&copy; 2025 PHUKET FOOD HERO. All rights reserved.</p>
+        <p>© 2025 PHUKET FOOD HERO. All rights reserved.</p>
+        <div class="contact-email">
+            <a href="mailto:pawisrongsin@gmail.com">ติดต่อเรา: pawisrongsin@gmail.com</a>
+        </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="script.js"></script> <!-- *** ตรวจสอบว่า script.js ถูกโหลดที่นี่ (ก่อนปิด </body>) *** -->
 </body>
 </html>
