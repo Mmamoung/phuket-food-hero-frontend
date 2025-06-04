@@ -31,6 +31,7 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
 
     try {
         // Attempt to register first
+        // TODO: Update to your Render.com Backend URL
         response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -54,6 +55,7 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
         } else if (response.status === 400 && result.msg === 'User นี้ลงทะเบียนแล้ว') {
             // User already registered, attempt to log in
             console.log('User already registered, attempting login...');
+            // TODO: Update to your Render.com Backend URL
             response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -93,6 +95,7 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
 // --- Helper function for generic login attempt ---
 async function genericLoginAttempt(email, password) {
     try {
+        // TODO: Update to your Render.com Backend URL
         const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -123,7 +126,7 @@ async function genericLoginAttempt(email, password) {
 
 
 // --- Helper function to render data blocks dynamically ---
-function renderDataBlocks(data, targetWrapperId) {
+async function renderDataBlocks(data, targetWrapperId) {
     const wrapper = document.querySelector(targetWrapperId);
     if (!wrapper) return;
 
@@ -136,6 +139,25 @@ function renderDataBlocks(data, targetWrapperId) {
 
     const userRole = localStorage.getItem('userRole'); // Get current user's role
     const userId = localStorage.getItem('userId'); // Get current user's ID
+
+    // Fetch user's stars for display
+    let userStars = 0;
+    try {
+        // TODO: Implement Backend API to get user profile with stars
+        // This API endpoint needs to be created in your Backend (e.g., in routes/auth.js)
+        // It should return user data including the 'stars' field.
+        const profileResponse = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/auth/profile/${userId}`);
+        const profileData = await profileResponse.json();
+        userStars = profileData.stars || 0;
+    } catch (error) {
+        console.error('Failed to fetch user stars:', error);
+    }
+    // Update star display in sidebar
+    const userStarsElement = document.querySelector('.user-stars');
+    if (userStarsElement) {
+        userStarsElement.textContent = `⭐ ${userStars} ดาว`;
+    }
+
 
     data.forEach(item => {
         const dataBlock = document.createElement('div');
@@ -183,7 +205,7 @@ function renderDataBlocks(data, targetWrapperId) {
                 loadPostDetails(postId);
             });
         });
-        // NEW: Attach receive waste button listeners for farmer dashboard
+        // Attach receive waste button listeners for farmer dashboard
         wrapper.querySelectorAll('.receive-waste-button').forEach(button => {
             button.addEventListener('click', (e) => {
                 const wasteId = e.target.dataset.id;
@@ -221,6 +243,7 @@ function showConfirmationModal(message, onConfirm) {
 async function deleteWasteEntry(id) {
     console.log('Frontend attempting to delete ID:', id);
     try {
+        // TODO: Update to your Render.com Backend URL
         const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/${id}`, {
             method: 'DELETE'
         });
@@ -248,7 +271,7 @@ async function deleteWasteEntry(id) {
     }
 }
 
-// NEW: Handle Receive Waste Function (for Farmer)
+// Handle Receive Waste Function (for Farmer)
 async function handleReceiveWaste(wasteId) {
     alert(`รับเศษอาหาร ID: ${wasteId} (ยังไม่ส่งข้อมูลไปยัง Backend)`);
     // TODO: Phase 2 - Implement Backend API to update waste status and farmer's stars
@@ -296,11 +319,11 @@ function loadContent(contentHtml) {
     if (document.getElementById('backFromAnalysis')) {
         document.getElementById('backFromAnalysis').addEventListener('click', loadSchoolDashboard);
     }
-    // NEW: Event listener for back from edit profile page
+    // Event listener for back from edit profile page
     if (document.getElementById('backFromEditProfile')) {
         document.getElementById('backFromEditProfile').addEventListener('click', loadSchoolDashboard);
     }
-    // NEW: Event listener for back from knowledge page
+    // Event listener for back from knowledge page
     if (document.getElementById('backFromKnowledge')) {
         document.getElementById('backFromKnowledge').addEventListener('click', (event) => {
              // Go back to the dashboard of the current role
@@ -391,6 +414,7 @@ function loadContent(contentHtml) {
             const formData = new FormData(addWasteForm);
 
             try {
+                // TODO: Update to your Render.com Backend URL
                 const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/add', {
                     method: 'POST',
                     body: formData
@@ -432,26 +456,6 @@ function loadContent(contentHtml) {
         }
     }
 
-    // NEW: Edit Profile Form Submission (Placeholder for Phase 2)
-    const editProfileForm = document.getElementById('editProfileForm');
-    if (editProfileForm) {
-        editProfileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            alert('คุณกดบันทึกข้อมูลแก้ไขแล้ว! (ยังไม่ส่งข้อมูลไปยัง Backend)');
-            // TODO: Phase 2 - Implement Backend API to update user profile
-            // Example:
-            // const formData = new FormData(editProfileForm);
-            // const data = Object.fromEntries(formData.entries());
-            // const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/profile', {
-            //     method: 'PUT',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(data)
-            // });
-            loadSchoolDashboard(); // Go back to dashboard
-        });
-    }
-
-
     // --- Dashboard specific buttons ---
     if (document.getElementById('addWasteDataButton')) {
         document.getElementById('addWasteDataButton').addEventListener('click', () => {
@@ -462,11 +466,11 @@ function loadContent(contentHtml) {
     if (document.getElementById('viewAnalysisButton')) {
         document.getElementById('viewAnalysisButton').addEventListener('click', loadAnalysisPage);
     }
-    // NEW: Event listener for "แก้ไขข้อมูล" button
+    // Event listener for "แก้ไขข้อมูล" button
     if (document.getElementById('editProfileButton')) {
         document.getElementById('editProfileButton').addEventListener('click', loadEditProfilePage);
     }
-    // NEW: Event listener for "ความรู้เรื่องการกำจัดขยะ" button
+    // Event listener for "ความรู้เรื่องการกำจัดขยะ" button
     if (document.getElementById('knowledgeButton')) {
         document.getElementById('knowledgeButton').addEventListener('click', loadKnowledgePage);
     }
@@ -486,14 +490,16 @@ function getMainPageHtml() {
             <div class="cards-and-descriptions-wrapper">
                 <div class="card-with-description">
                     <div class="card">
-                        <img src="https://placehold.co/400x300/E0E0E0/333333?text=School+Image" alt="รูปภาพโรงเรียน" class="card-image">
+                        <!-- TODO: Replace with your actual school image path -->
+                        <img src="images/school.jpg" alt="รูปภาพโรงเรียน" class="card-image">
                         <button class="button" id="schoolButton">โรงเรียน</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อลงทะเบียนและจัดการเศษอาหารเหลือจากโรงเรียนของคุณ</p>
                 </div>
                 <div class="card-with-description">
                     <div class="card">
-                        <img src="https://placehold.co/400x300/E0E0E0/333333?text=Farmer+Image" alt="รูปภาพเกษตรกร" class="card-image">
+                        <!-- TODO: Replace with your actual farmer image path -->
+                        <img src="images/farmer.jpg" alt="รูปภาพเกษตรกร" class="card-image">
                         <button class="button" id="farmerButton">เกษตรกร</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อเลือกประเภทเศษอาหารที่คุณต้องการนำไปใช้ประโยชน์</p>
@@ -755,7 +761,7 @@ function getAnalysisPageHtml() {
     `;
 }
 
-// NEW: Edit Profile Page HTML content
+// Edit Profile Page HTML content
 function getEditProfilePageHtml(userData = {}) {
     const userRole = localStorage.getItem('userRole');
     const instituteName = userData.instituteName || '';
@@ -829,7 +835,7 @@ function getEditProfilePageHtml(userData = {}) {
     `;
 }
 
-// NEW: Knowledge Page HTML content
+// Knowledge Page HTML content
 function getKnowledgePageHtml() {
     return `
         <div class="knowledge-container">
@@ -870,6 +876,7 @@ function getKnowledgePageHtml() {
 async function loadSchoolDashboard() {
     loadContent(getSchoolDashboardHtml());
     try {
+        // TODO: Update to your Render.com Backend URL
         const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/posts');
         const data = await response.json();
         renderDataBlocks(data, '#schoolDataBlocks');
@@ -883,6 +890,7 @@ async function loadSchoolDashboard() {
 async function loadFarmerDashboard(filters = {}) {
     loadContent(getFarmerDashboardHtml());
     try {
+        // TODO: Update to your Render.com Backend URL
         let url = new URL('https://phuket-food-hero-api.onrender.com/api/waste/filter');
         Object.keys(filters).forEach(key => {
             if (filters[key]) url.searchParams.append(key, filters[key]);
@@ -918,6 +926,7 @@ async function applyFarmerFilters() {
 
 async function loadPostDetails(postId) {
     try {
+        // TODO: Update to your Render.com Backend URL
         const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/posts/${postId}`);
         const postData = await response.json();
         loadContent(getPostDetailsHtml(postData));
@@ -930,6 +939,7 @@ async function loadPostDetails(postId) {
 async function loadAnalysisPage() {
     loadContent(getAnalysisPageHtml());
     try {
+        // TODO: Update to your Render.com Backend URL
         const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/analyze');
         const { analysis, rawData } = await response.json(); // Get both analysis and rawData
 
@@ -1025,7 +1035,7 @@ async function loadAnalysisPage() {
     }
 }
 
-// NEW: Load Edit Profile Page Function (fetches user data)
+// Load Edit Profile Page Function (fetches user data)
 async function loadEditProfilePage() {
     loadContent(getEditProfilePageHtml()); // Load empty form first
     try {
@@ -1035,6 +1045,7 @@ async function loadEditProfilePage() {
             loadMainPage();
             return;
         }
+        // TODO: Update to your Render.com Backend URL
         const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/auth/profile/${userId}`); // Assuming API to get profile
         const userData = await response.json();
         
@@ -1054,13 +1065,18 @@ async function loadEditProfilePage() {
                 document.getElementById('editOtherPurpose').value = userData.otherPurpose || '';
             }
         }
+        // Attach event listener for purposeSelect in edit profile page
+        if (document.getElementById('editPurposeSelect')) {
+            document.getElementById('editPurposeSelect').addEventListener('change', toggleEditOtherPurposeInput);
+        }
+
     } catch (error) {
         console.error('Failed to load profile data:', error);
         alert('ไม่สามารถโหลดข้อมูลโปรไฟล์ได้');
     }
 }
 
-// NEW: Load Knowledge Page Function
+// Load Knowledge Page Function
 function loadKnowledgePage() {
     loadContent(getKnowledgePageHtml());
 }
@@ -1108,6 +1124,11 @@ function loadMainPage() {
     loadContent(getMainPageHtml());
 }
 
+// NEW: Function to load generic login page
+function loadGenericLoginPage() {
+    loadContent(getGenericLoginPageHtml());
+}
+
 // Initial page load and setup
 document.addEventListener('DOMContentLoaded', () => {
     // Ensure the main app container is ready
@@ -1125,6 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadGenericLoginPage();
         });
     } else {
+        // This warning will appear in the console if the element is not found.
         console.warn("Warning: #signInLink not found. The sign-in button may not be functional.");
     }
 
@@ -1138,9 +1160,3 @@ document.addEventListener('DOMContentLoaded', () => {
         loadMainPage(); // Default to main page if not logged in
     }
 });
-
-// Event listener for the "sign-in" link in the header (OLD, now handled in DOMContentLoaded)
-// document.getElementById('signInLink').addEventListener('click', (event) => {
-//     event.preventDefault();
-//     loadGenericLoginPage(); // sign-in link goes to generic login page
-// });
