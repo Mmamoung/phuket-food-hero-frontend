@@ -157,7 +157,10 @@ function renderDataBlocks(data, targetWrapperId) {
                 <p><strong>ติดต่อ:</strong> ${item.school ? item.school.contactNumber : 'ไม่ระบุ'}</p>
             </div>
             ${userRole === 'school' && item.school && item.school._id === userId ? `<button class="delete-button" data-id="${item._id}">ลบ</button>` : ''}
-            ${userRole === 'farmer' ? `<button class="details-button" data-id="${item._id}">รายละเอียด</button>` : ''}
+            ${userRole === 'farmer' ? `
+                <button class="receive-waste-button" data-id="${item._id}">รับเศษอาหาร</button>
+                <button class="details-button" data-id="${item._id}">รายละเอียด</button>
+                ` : ''}
         `;
         wrapper.appendChild(dataBlock);
     });
@@ -178,6 +181,13 @@ function renderDataBlocks(data, targetWrapperId) {
             button.addEventListener('click', (e) => {
                 const postId = e.target.dataset.id;
                 loadPostDetails(postId);
+            });
+        });
+        // NEW: Attach receive waste button listeners for farmer dashboard
+        wrapper.querySelectorAll('.receive-waste-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const wasteId = e.target.dataset.id;
+                showConfirmationModal('คุณต้องการรับเศษอาหารนี้หรือไม่?', () => handleReceiveWaste(wasteId));
             });
         });
     }
@@ -238,6 +248,28 @@ async function deleteWasteEntry(id) {
     }
 }
 
+// NEW: Handle Receive Waste Function (for Farmer)
+async function handleReceiveWaste(wasteId) {
+    alert(`รับเศษอาหาร ID: ${wasteId} (ยังไม่ส่งข้อมูลไปยัง Backend)`);
+    // TODO: Phase 2 - Implement Backend API to update waste status and farmer's stars
+    // Example:
+    // try {
+    //     const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/receive/${wasteId}`, {
+    //         method: 'POST'
+    //     });
+    //     if (response.ok) {
+    //         alert('ยืนยันการรับเศษอาหารสำเร็จ!');
+    //         loadFarmerDashboard(); // Reload dashboard
+    //     } else {
+    //         const errorData = await response.json();
+    //         alert('ยืนยันการรับเศษอาหารไม่สำเร็จ: ' + (errorData.msg || 'เกิดข้อผิดพลาด'));
+    //     }
+    // } catch (error) {
+    //     console.error('Receive Waste Error:', error);
+    //     alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+    // }
+}
+
 
 // --- Main Page Loading Function ---
 function loadContent(contentHtml) {
@@ -263,6 +295,24 @@ function loadContent(contentHtml) {
     // Event listener for back from analysis page
     if (document.getElementById('backFromAnalysis')) {
         document.getElementById('backFromAnalysis').addEventListener('click', loadSchoolDashboard);
+    }
+    // NEW: Event listener for back from edit profile page
+    if (document.getElementById('backFromEditProfile')) {
+        document.getElementById('backFromEditProfile').addEventListener('click', loadSchoolDashboard);
+    }
+    // NEW: Event listener for back from knowledge page
+    if (document.getElementById('backFromKnowledge')) {
+        document.getElementById('backFromKnowledge').addEventListener('click', (event) => {
+             // Go back to the dashboard of the current role
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'school') {
+                loadSchoolDashboard();
+            } else if (userRole === 'farmer') {
+                loadFarmerDashboard();
+            } else {
+                loadMainPage(); // Fallback
+            }
+        });
     }
 
 
@@ -382,6 +432,26 @@ function loadContent(contentHtml) {
         }
     }
 
+    // NEW: Edit Profile Form Submission (Placeholder for Phase 2)
+    const editProfileForm = document.getElementById('editProfileForm');
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            alert('คุณกดบันทึกข้อมูลแก้ไขแล้ว! (ยังไม่ส่งข้อมูลไปยัง Backend)');
+            // TODO: Phase 2 - Implement Backend API to update user profile
+            // Example:
+            // const formData = new FormData(editProfileForm);
+            // const data = Object.fromEntries(formData.entries());
+            // const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/profile', {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(data)
+            // });
+            loadSchoolDashboard(); // Go back to dashboard
+        });
+    }
+
+
     // --- Dashboard specific buttons ---
     if (document.getElementById('addWasteDataButton')) {
         document.getElementById('addWasteDataButton').addEventListener('click', () => {
@@ -391,6 +461,14 @@ function loadContent(contentHtml) {
     // Event listener for "ดูรายงานวิเคราะห์" button
     if (document.getElementById('viewAnalysisButton')) {
         document.getElementById('viewAnalysisButton').addEventListener('click', loadAnalysisPage);
+    }
+    // NEW: Event listener for "แก้ไขข้อมูล" button
+    if (document.getElementById('editProfileButton')) {
+        document.getElementById('editProfileButton').addEventListener('click', loadEditProfilePage);
+    }
+    // NEW: Event listener for "ความรู้เรื่องการกำจัดขยะ" button
+    if (document.getElementById('knowledgeButton')) {
+        document.getElementById('knowledgeButton').addEventListener('click', loadKnowledgePage);
     }
 
 
@@ -408,14 +486,14 @@ function getMainPageHtml() {
             <div class="cards-and-descriptions-wrapper">
                 <div class="card-with-description">
                     <div class="card">
-                        <img src="images/school.jpg" alt="รูปภาพโรงเรียน" class="card-image">
+                        <img src="https://placehold.co/400x300/E0E0E0/333333?text=School+Image" alt="รูปภาพโรงเรียน" class="card-image">
                         <button class="button" id="schoolButton">โรงเรียน</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อลงทะเบียนและจัดการเศษอาหารเหลือจากโรงเรียนของคุณ</p>
                 </div>
                 <div class="card-with-description">
                     <div class="card">
-                        <img src="images/farmer.jpg" alt="รูปภาพเกษตรกร" class="card-image">
+                        <img src="https://placehold.co/400x300/E0E0E0/333333?text=Farmer+Image" alt="รูปภาพเกษตรกร" class="card-image">
                         <button class="button" id="farmerButton">เกษตรกร</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อเลือกประเภทเศษอาหารที่คุณต้องการนำไปใช้ประโยชน์</p>
@@ -528,6 +606,8 @@ function getSchoolDashboardHtml() {
         <div class="school-dashboard-container">
             <div class="dashboard-content-area">
                 <div class="sidebar">
+                    <p class="user-stars">⭐ 0 ดาว</p>
+                    <p style="color: #666; font-size:0.9em; text-align: center; padding: 10px;">(ฟังก์ชันกรองจะอยู่บนหน้าของเกษตรกร)</p>
                 </div>
                 <div class="main-display-area">
                     <div class="data-block-wrapper" id="schoolDataBlocks">
@@ -540,6 +620,8 @@ function getSchoolDashboardHtml() {
                 <button type="button" class="back-button" id="backToMainFromDashboard">ย้อนกลับ</button>
                 <button type="button" class="add-data-button" id="addWasteDataButton">เพิ่มข้อมูลเศษอาหาร</button>
                 <button type="button" class="analysis-button" id="viewAnalysisButton">ดูรายงานวิเคราะห์</button>
+                <button type="button" class="edit-profile-button" id="editProfileButton">แก้ไขข้อมูล</button>
+                <button type="button" class="knowledge-button" id="knowledgeButton">ความรู้เรื่องการกำจัดขยะ</button>
             </div>
         </div>
     `;
@@ -587,6 +669,7 @@ function getFarmerDashboardHtml() {
         <div class="farmer-dashboard-container">
             <div class="dashboard-content-area">
                 <div class="sidebar">
+                    <p class="user-stars">⭐ 0 ดาว</p>
                     <h3>กรอง</h3>
                     <div class="filter-group">
                         <label for="filterWeightMin">น้ำหนัก (kg):</label>
@@ -619,6 +702,7 @@ function getFarmerDashboardHtml() {
 
             <div class="dashboard-buttons">
                 <button type="button" class="back-button" id="backToMainFromDashboard">ย้อนกลับ</button>
+                <button type="button" class="knowledge-button" id="knowledgeButton">ความรู้เรื่องการกำจัดขยะ</button>
             </div>
         </div>
     `;
@@ -666,6 +750,116 @@ function getAnalysisPageHtml() {
             </div>
             <div class="form-buttons">
                 <button type="button" class="back-button" id="backFromAnalysis">ย้อนกลับ</button>
+            </div>
+        </div>
+    `;
+}
+
+// NEW: Edit Profile Page HTML content
+function getEditProfilePageHtml(userData = {}) {
+    const userRole = localStorage.getItem('userRole');
+    const instituteName = userData.instituteName || '';
+    const address = userData.address || '';
+    const contactNumber = userData.contactNumber || '';
+    const email = userData.email || '';
+    const name = userData.name || '';
+    const purpose = userData.purpose || '';
+    const otherPurpose = userData.otherPurpose || '';
+
+    let roleSpecificFields = '';
+    if (userRole === 'school') {
+        roleSpecificFields = `
+            <div class="form-group">
+                <label for="editInstituteName">ชื่อสถาบัน</label>
+                <input type="text" id="editInstituteName" name="instituteName" value="${instituteName}" required>
+            </div>
+            <div class="form-group">
+                <label for="editAddress">ที่อยู่</label>
+                <input type="text" id="editAddress" name="address" value="${address}" required>
+            </div>
+            <div class="form-group">
+                <label for="editContactNumber">เบอร์ติดต่อ</label>
+                <input type="tel" id="editContactNumber" name="contactNumber" value="${contactNumber}" required>
+            </div>
+        `;
+    } else if (userRole === 'farmer') {
+         roleSpecificFields = `
+            <div class="form-group">
+                <label for="editFarmerName">ชื่อ</label>
+                <input type="text" id="editFarmerName" name="name" value="${name}" required>
+            </div>
+            <div class="form-group">
+                <label for="editContactNumber">เบอร์ติดต่อ</label>
+                <input type="tel" id="editContactNumber" name="contactNumber" value="${contactNumber}" required>
+            </div>
+            <div class="form-group">
+                <label for="editPurposeSelect">ความต้องการของคุณ</label>
+                <select id="editPurposeSelect" name="purpose" required>
+                    <option value="animal_feed" ${purpose === 'animal_feed' ? 'selected' : ''}>อยากนำเศษอาหารไปเลี้ยงสัตว์</option>
+                    <option value="compost" ${purpose === 'compost' ? 'selected' : ''}>อยากนำเศษอาหารไปหมักทำปุ๋ย</option>
+                    <option value="other" ${purpose === 'other' ? 'selected' : ''}>อื่นๆ</option>
+                </select>
+            </div>
+            <div class="form-group" id="editOtherPurposeInput" style="${purpose === 'other' ? 'display:block;' : 'display:none;'}">
+                <label for="editOtherPurpose">ระบุความต้องการอื่นๆ</label>
+                <textarea id="editOtherPurpose" name="otherPurpose" rows="3">${otherPurpose}</textarea>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="edit-profile-container">
+            <h2>แก้ไขข้อมูลส่วนตัว</h2>
+            <form id="editProfileForm">
+                ${roleSpecificFields}
+                <div class="form-group">
+                    <label for="editEmail">อีเมล (ไม่สามารถแก้ไขได้)</label>
+                    <input type="email" id="editEmail" name="email" value="${email}" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="editPassword">รหัสผ่าน (เว้นว่างหากไม่ต้องการเปลี่ยน)</label>
+                    <input type="password" id="editPassword" name="password">
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="back-button" id="backFromEditProfile">ย้อนกลับ</button>
+                    <button type="submit" class="login-button">บันทึกข้อมูล</button>
+                </div>
+            </form>
+        </div>
+    `;
+}
+
+// NEW: Knowledge Page HTML content
+function getKnowledgePageHtml() {
+    return `
+        <div class="knowledge-container">
+            <h2>ความรู้เรื่องการกำจัดขยะและเศษอาหาร</h2>
+            <div class="knowledge-content">
+                <h3>ทำไมต้องแยกขยะเศษอาหาร?</h3>
+                <p>การแยกขยะเศษอาหารออกจากขยะประเภทอื่น ๆ มีความสำคัญอย่างยิ่งในการช่วยลดผลกระทบต่อสิ่งแวดล้อม และเพิ่มมูลค่าให้กับเศษอาหารเหล่านั้น:</p>
+                <ul>
+                    <li><strong>ลดมลพิษในหลุมฝังกลบ:</strong> เศษอาหารที่เน่าเปื่อยในหลุมฝังกลบจะปล่อยก๊าซมีเทน ซึ่งเป็นก๊าซเรือนกระจกที่รุนแรงกว่าคาร์บอนไดออกไซด์ถึง 25 เท่า การแยกเศษอาหารช่วยลดการปล่อยก๊าซเหล่านี้</li>
+                    <li><strong>ลดกลิ่นและแมลง:</strong> การแยกเศษอาหารช่วยลดกลิ่นเหม็นและปัญหาแมลงวัน สัตว์พาหะต่าง ๆ ที่มักจะมาตอมกองขยะรวม</li>
+                    <li><strong>สร้างมูลค่า:</strong> เศษอาหารสามารถนำไปแปรรูปเป็นปุ๋ยหมักคุณภาพสูงสำหรับพืช หรือใช้เป็นอาหารสัตว์ ซึ่งเป็นการหมุนเวียนทรัพยากรกลับคืนสู่ระบบเศรษฐกิจ</li>
+                    <li><strong>ลดค่าใช้จ่ายในการกำจัด:</strong> การลดปริมาณขยะเศษอาหารที่ต้องนำไปฝังกลบ ช่วยลดภาระและค่าใช้จ่ายในการจัดการขยะของเทศบาล</li>
+                </ul>
+
+                <h3>วิธีการจัดการเศษอาหารเบื้องต้น</h3>
+                <ol>
+                    <li><strong>แยกตั้งแต่ต้นทาง:</strong> แบ่งถังขยะสำหรับเศษอาหารโดยเฉพาะในครัวเรือนหรือโรงเรียน</li>
+                    <li><strong>เทน้ำออก:</strong> ก่อนทิ้งเศษอาหาร ควรเทน้ำหรือของเหลวส่วนเกินออกให้มากที่สุด เพื่อลดน้ำหนักและกลิ่น</li>
+                    <li><strong>ใส่ภาชนะที่เหมาะสม:</strong> ใช้ถุงหรือภาชนะที่ปิดสนิทเพื่อป้องกันกลิ่นและสัตว์รบกวน</li>
+                    <li><strong>นำไปใช้ประโยชน์:</strong> หากเป็นไปได้ ลองนำเศษอาหารไปทำปุ๋ยหมักเองที่บ้าน หรือหาแหล่งรับซื้อ/รับบริจาคเศษอาหารในชุมชน</li>
+                </ol>
+
+                <h3>แหล่งข้อมูลเพิ่มเติม:</h3>
+                <ul>
+                    <li><a href="https://www.youtube.com/watch?v=your_knowledge_video_link" target="_blank">วิดีโอเกี่ยวกับการแยกเศษอาหาร</a></li>
+                    <li><a href="https://www.example.com/foodwaste_article" target="_blank">บทความเกี่ยวกับการลดขยะอาหาร</a></li>
+                </ul>
+            </div>
+            <div class="form-buttons">
+                <button type="button" class="back-button" id="backFromKnowledge">ย้อนกลับ</button>
             </div>
         </div>
     `;
@@ -831,6 +1025,46 @@ async function loadAnalysisPage() {
     }
 }
 
+// NEW: Load Edit Profile Page Function (fetches user data)
+async function loadEditProfilePage() {
+    loadContent(getEditProfilePageHtml()); // Load empty form first
+    try {
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่');
+            loadMainPage();
+            return;
+        }
+        const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/auth/profile/${userId}`); // Assuming API to get profile
+        const userData = await response.json();
+        
+        // Populate form fields
+        document.getElementById('editEmail').value = userData.email || '';
+        if (document.getElementById('editInstituteName')) document.getElementById('editInstituteName').value = userData.instituteName || '';
+        if (document.getElementById('editAddress')) document.getElementById('editAddress').value = userData.address || '';
+        if (document.getElementById('editContactNumber')) document.getElementById('editContactNumber').value = userData.contactNumber || '';
+        if (document.getElementById('editFarmerName')) document.getElementById('editFarmerName').value = userData.name || '';
+        
+        const purposeSelect = document.getElementById('editPurposeSelect');
+        if (purposeSelect) {
+            purposeSelect.value = userData.purpose || '';
+            const editOtherPurposeInput = document.getElementById('editOtherPurposeInput');
+            if (editOtherPurposeInput) {
+                editOtherPurposeInput.style.display = (userData.purpose === 'other' ? 'block' : 'none');
+                document.getElementById('editOtherPurpose').value = userData.otherPurpose || '';
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load profile data:', error);
+        alert('ไม่สามารถโหลดข้อมูลโปรไฟล์ได้');
+    }
+}
+
+// NEW: Load Knowledge Page Function
+function loadKnowledgePage() {
+    loadContent(getKnowledgePageHtml());
+}
+
 
 // Function to handle "Other" option in dropdown
 function toggleOtherPurposeInput() {
@@ -848,6 +1082,23 @@ function toggleOtherPurposeInput() {
     }
 }
 
+// Function to handle "Other" option in Edit Profile dropdown
+function toggleEditOtherPurposeInput() {
+    const purposeSelect = document.getElementById('editPurposeSelect');
+    const otherPurposeInput = document.getElementById('editOtherPurposeInput');
+    const otherPurposeTextarea = document.getElementById('editOtherPurpose');
+
+    if (purposeSelect.value === 'other') {
+        otherPurposeInput.style.display = 'block';
+        otherPurposeTextarea.setAttribute('required', 'true');
+    } else {
+        otherPurposeInput.style.display = 'none';
+        otherPurposeTextarea.removeAttribute('required');
+        otherPurposeTextarea.value = '';
+    }
+}
+
+
 // Function to load the main page and attach event listeners
 function loadMainPage() {
     // Clear token and role on returning to main page (effectively logging out)
@@ -855,11 +1106,6 @@ function loadMainPage() {
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
     loadContent(getMainPageHtml());
-}
-
-// NEW: Function to load generic login page
-function loadGenericLoginPage() {
-    loadContent(getGenericLoginPageHtml());
 }
 
 // Initial page load and setup
