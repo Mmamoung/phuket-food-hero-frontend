@@ -143,7 +143,9 @@ async function renderDataBlocks(data, targetWrapperId) {
     // Fetch user's stars for display
     let userStars = 0;
     try {
-        // TODO: Update to your Render.com Backend URL
+        // TODO: Implement Backend API to get user profile with stars
+        // This API endpoint needs to be created in your Backend (e.g., in routes/auth.js)
+        // It should return user data including the 'stars' field.
         const profileResponse = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/auth/profile/${userId}`);
         const profileData = await profileResponse.json();
         userStars = profileData.stars || 0;
@@ -203,7 +205,7 @@ async function renderDataBlocks(data, targetWrapperId) {
                 loadPostDetails(postId);
             });
         });
-        // NEW: Attach receive waste button listeners for farmer dashboard
+        // Attach receive waste button listeners for farmer dashboard
         wrapper.querySelectorAll('.receive-waste-button').forEach(button => {
             button.addEventListener('click', (e) => {
                 const wasteId = e.target.dataset.id;
@@ -271,25 +273,24 @@ async function deleteWasteEntry(id) {
 
 // Handle Receive Waste Function (for Farmer)
 async function handleReceiveWaste(wasteId) {
-    // TODO: Update to your Render.com Backend URL
-    try {
-        const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/receive/${wasteId}`, {
-            method: 'POST'
-        });
-
-        if (response.ok) {
-            alert('ยืนยันการรับเศษอาหารสำเร็จ!');
-            loadFarmerDashboard(); // Reload dashboard to reflect changes (e.g., stars)
-        } else {
-            const errorData = await response.json();
-            alert('ยืนยันการรับเศษอาหารไม่สำเร็จ: ' + (errorData.msg || 'เกิดข้อผิดพลาด'));
-        }
-    } catch (error) {
-        console.error('Receive Waste Error:', error);
-        if (error.message !== 'Unauthorized or Forbidden') {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
-        }
-    }
+    alert(`รับเศษอาหาร ID: ${wasteId} (ยังไม่ส่งข้อมูลไปยัง Backend)`);
+    // TODO: Phase 2 - Implement Backend API to update waste status and farmer's stars
+    // Example:
+    // try {
+    //     const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/receive/${wasteId}`, {
+    //         method: 'POST'
+    //     });
+    //     if (response.ok) {
+    //         alert('ยืนยันการรับเศษอาหารสำเร็จ!');
+    //         loadFarmerDashboard(); // Reload dashboard
+    //     } else {
+    //         const errorData = await response.json();
+    //         alert('ยืนยันการรับเศษอาหารไม่สำเร็จ: ' + (errorData.msg || 'เกิดข้อผิดพลาด'));
+    //     }
+    // } catch (error) {
+    //     console.error('Receive Waste Error:', error);
+    //     alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+    // }
 }
 
 
@@ -489,7 +490,7 @@ function getMainPageHtml() {
             <div class="cards-and-descriptions-wrapper">
                 <div class="card-with-description">
                     <div class="card">
-                        <!-- TODO: Replace with your actual school image path -->
+                        <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
                         <img src="images/school_image.jpg" alt="รูปภาพโรงเรียน" class="card-image">
                         <button class="button" id="schoolButton">โรงเรียน</button>
                     </div>
@@ -497,7 +498,7 @@ function getMainPageHtml() {
                 </div>
                 <div class="card-with-description">
                     <div class="card">
-                        <!-- TODO: Replace with your actual farmer image path -->
+                        <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
                         <img src="images/farmer_image.jpg" alt="รูปภาพเกษตรกร" class="card-image">
                         <button class="button" id="farmerButton">เกษตรกร</button>
                     </div>
@@ -1121,6 +1122,11 @@ function loadMainPage() {
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
     loadContent(getMainPageHtml());
+}
+
+// NEW: Function to load generic login page
+function loadGenericLoginPage() {
+    loadContent(getGenericLoginPageHtml());
 }
 
 // Initial page load and setup
