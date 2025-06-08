@@ -156,6 +156,7 @@ async function renderDataBlocks(data, targetWrapperId) {
         userStarsElement.textContent = `⭐ ${userStars} ดาว`;
     }
 
+
     data.forEach(item => {
         const dataBlock = document.createElement('div');
         dataBlock.classList.add('data-block');
@@ -287,7 +288,7 @@ async function deleteWasteEntry(id) {
     }
 }
 
-// NEW: Handle Receive Waste Function (for Farmer)
+// Handle Receive Waste Function (for Farmer)
 async function handleReceiveWaste(wasteId) {
     console.log(`Frontend sending receive request for ID: ${wasteId}`);
     try {
@@ -298,7 +299,7 @@ async function handleReceiveWaste(wasteId) {
 
         if (response.ok) {
             alert('ยืนยันการรับเศษอาหารสำเร็จ!');
-            loadFarmerDashboard(); // Reload dashboard
+            loadFarmerDashboard(); // Reload dashboard to reflect changes (e.g., stars)
         } else {
             const errorData = await response.json();
             alert('ยืนยันการรับเศษอาหารไม่สำเร็จ: ' + (errorData.msg || 'เกิดข้อผิดพลาด'));
@@ -509,26 +510,6 @@ function loadContent(contentHtml) {
         }
     }
 
-    // NEW: Edit Profile Form Submission (Placeholder for Phase 2)
-    const editProfileForm = document.getElementById('editProfileForm');
-    if (editProfileForm) {
-        editProfileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            alert('คุณกดบันทึกข้อมูลแก้ไขแล้ว! (ยังไม่ส่งข้อมูลไปยัง Backend)');
-            // TODO: Phase 2 - Implement Backend API to update user profile
-            // Example:
-            // const formData = new FormData(editProfileForm);
-            // const data = Object.fromEntries(formData.entries());
-            // const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/profile', {
-            //     method: 'PUT',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(data)
-            // });
-            loadSchoolDashboard(); // Go back to dashboard
-        });
-    }
-
-
     // --- Dashboard specific buttons ---
     if (document.getElementById('addWasteDataButton')) {
         document.getElementById('addWasteDataButton').addEventListener('click', () => {
@@ -563,6 +544,9 @@ function loadContent(contentHtml) {
     }
 
     // NEW: Event listener for School Scan QR button (on pending delivery page)
+    // This listener is specific to the pending delivery page, so it needs to be attached after that page is loaded
+    // It's also part of the loadContent function now, so it will be called automatically
+    // The actual QR code scanning will be a prompt for simplicity for now
     const scanQRButton = document.getElementById('scanQRButton');
     if (scanQRButton) {
         scanQRButton.addEventListener('click', async () => {
@@ -585,7 +569,7 @@ function getMainPageHtml() {
                 <div class="card-with-description">
                     <div class="card">
                         <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
-                        <img src="images/school.jpg" alt="รูปภาพโรงเรียน" class="card-image">
+                        <img src="images/school_image.jpg" alt="รูปภาพโรงเรียน" class="card-image">
                         <button class="button" id="schoolButton">โรงเรียน</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อลงทะเบียนและจัดการเศษอาหารเหลือจากโรงเรียนของคุณ</p>
@@ -593,7 +577,7 @@ function getMainPageHtml() {
                 <div class="card-with-description">
                     <div class="card">
                         <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
-                        <img src="images/farmer.jpg" alt="รูปภาพเกษตรกร" class="card-image">
+                        <img src="images/farmer_image.jpg" alt="รูปภาพเกษตรกร" class="card-image">
                         <button class="button" id="farmerButton">เกษตรกร</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อเลือกประเภทเศษอาหารที่คุณต้องการนำไปใช้ประโยชน์</p>
@@ -707,6 +691,7 @@ function getSchoolDashboardHtml() {
             <div class="dashboard-content-area">
                 <div class="sidebar">
                     <p class="user-stars">⭐ 0 ดาว</p>
+                    <p style="color: #666; font-size:0.9em; text-align: center; padding: 10px;">(ฟังก์ชันกรองจะอยู่บนหน้าของเกษตรกร)</p>
                 </div>
                 <div class="main-display-area">
                     <div class="data-block-wrapper" id="schoolDataBlocks">
@@ -1149,7 +1134,7 @@ async function loadAnalysisPage() {
         }
 
         const ctx = document.getElementById('wasteChart').getContext('2d');
-
+        
         // Prepare data for Chart.js
         const labels = analysis.map(item => item.menu);
         const data = analysis.map(item => item.totalWeight);
@@ -1287,12 +1272,54 @@ async function loadPendingDeliveryPage() {
         // TODO: Update to your Render.com Backend URL
         const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/pending-delivery');
         const data = await response.json();
-        renderDataBlocks(data, '#pendingDeliveryBlocks'); // Render into the specific wrapper
+        // Render pending items
+        const pendingDeliveryBlocksWrapper = document.querySelector('#pendingDeliveryBlocks');
+        if (pendingDeliveryBlocksWrapper) {
+            pendingDeliveryBlocksWrapper.innerHTML = ''; // Clear loading message
+            if (data.length === 0) {
+                pendingDeliveryBlocksWrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่มีรายการเศษอาหารที่ต้องส่ง</p>';
+            } else {
+                data.forEach(item => {
+                    const date = new Date(item.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const receivedAt = new Date(item.receivedAt).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                    const pendingItemHtml = `
+                        <div class="data-block pending-item">
+                            <img src="${item.imageUrl || 'https://placehold.co/100x80/ADD8E6/000000?text=Waste+Pic'}" alt="Waste Image" class="data-item-image">
+                            <div class="data-item-details">
+                                <p><strong>เมนู:</strong> ${item.menu}</p>
+                                <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
+                                <p><strong>วันที่โพสต์:</strong> ${date}</p>
+                                <p><strong>ผู้รับ (เกษตรกร):</strong> ${item.receivedBy ? item.receivedBy.name : 'ไม่ระบุ'}</p>
+                                <p><strong>ติดต่อผู้รับ:</strong> ${item.receivedBy ? item.receivedBy.contactNumber : 'ไม่ระบุ'}</p>
+                                <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
+                            </div>
+                            <button class="scan-qr-button" data-id="${item._id}">สแกน QR Code เพื่อยืนยัน</button>
+                        </div>
+                    `;
+                    pendingDeliveryBlocksWrapper.insertAdjacentHTML('beforeend', pendingItemHtml);
+                });
+                // Attach event listeners for scan QR buttons after rendering
+                pendingDeliveryBlocksWrapper.querySelectorAll('.scan-qr-button').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const wasteId = e.target.dataset.id;
+                        const qrValue = prompt('จำลองการสแกน QR Code: กรุณากรอก Waste ID ที่แสดงบน QR Code ของเกษตรกรเพื่อยืนยันการส่งมอบ');
+                        if (qrValue && qrValue === wasteId) {
+                            await handleConfirmDelivery(wasteId);
+                        } else if (qrValue) {
+                            alert('รหัส QR Code ไม่ตรงกับรายการที่เลือก');
+                        } else {
+                            alert('กรุณากรอก ID เศษอาหารเพื่อยืนยัน');
+                        }
+                    });
+                });
+            }
+        }
     } catch (error) {
         console.error('Failed to load pending delivery data:', error);
         document.querySelector('#pendingDeliveryBlocks').innerHTML = '<p style="color: red; text-align: center;">ไม่สามารถโหลดข้อมูลรายการที่ต้องส่งได้</p>';
     }
 }
+
 
 // NEW: Load Received Waste Page Function (for Farmer)
 async function loadReceivedWastePage() {
@@ -1301,23 +1328,50 @@ async function loadReceivedWastePage() {
         // TODO: Update to your Render.com Backend URL
         const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/received-history');
         const data = await response.json();
-        renderDataBlocks(data, '#receivedWasteBlocks'); // Render into the specific wrapper
-
-        // Attach Show QR button listeners after content is rendered
-        const receivedWasteWrapper = document.querySelector('#receivedWasteBlocks');
-        if (receivedWasteWrapper) {
-            receivedWasteWrapper.querySelectorAll('.show-qr-button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const wasteId = e.target.dataset.id;
-                    loadQRCodeDisplayPage(wasteId);
+        
+        const receivedWasteBlocksWrapper = document.querySelector('#receivedWasteBlocks');
+        if (receivedWasteBlocksWrapper) {
+            receivedWasteBlocksWrapper.innerHTML = ''; // Clear loading message
+            if (data.length === 0) {
+                receivedWasteBlocksWrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ยังไม่มีรายการเศษอาหารที่รับ</p>';
+            } else {
+                data.forEach(item => {
+                    const date = new Date(item.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const receivedAt = new Date(item.receivedAt).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                    const deliveredStatus = item.isDelivered ? 'ส่งมอบแล้ว' : 'รอส่งมอบ';
+                    const receivedItemHtml = `
+                        <div class="data-block received-item">
+                            <img src="${item.imageUrl || 'https://placehold.co/100x80/ADD8E6/000000?text=Waste+Pic'}" alt="Waste Image" class="data-item-image">
+                            <div class="data-item-details">
+                                <p><strong>เมนู:</strong> ${item.menu}</p>
+                                <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
+                                <p><strong>วันที่โพสต์:</strong> ${date}</p>
+                                <p><strong>จากโรงเรียน:</strong> ${item.school ? item.school.instituteName : 'ไม่ระบุโรงเรียน'}</p>
+                                <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
+                                <p><strong>สถานะส่งมอบ:</strong> <span class="${item.isDelivered ? 'status-delivered' : 'status-pending'}">${deliveredStatus}</span></p>
+                            </div>
+                            ${!item.isDelivered ? `
+                                <button class="show-qr-button" data-id="${item._id}">แสดง QR Code</button>
+                            ` : ''}
+                        </div>
+                    `;
+                    receivedWasteBlocksWrapper.insertAdjacentHTML('beforeend', receivedItemHtml);
                 });
-            });
+                // Attach Show QR button listeners after content is rendered
+                receivedWasteBlocksWrapper.querySelectorAll('.show-qr-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const wasteId = e.target.dataset.id;
+                        loadQRCodeDisplayPage(wasteId);
+                    });
+                });
+            }
         }
     } catch (error) {
         console.error('Failed to load received waste data:', error);
         document.querySelector('#receivedWasteBlocks').innerHTML = '<p style="color: red; text-align: center;">ไม่สามารถโหลดข้อมูลรายการที่รับแล้วได้</p>';
     }
 }
+
 
 // NEW: Load QR Code Display Page Function
 function loadQRCodeDisplayPage(wasteId) {
@@ -1388,6 +1442,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadGenericLoginPage();
         });
     } else {
+        // This warning will appear in the console if the element is not found.
         console.warn("Warning: #signInLink not found. The sign-in button may not be functional.");
     }
 
