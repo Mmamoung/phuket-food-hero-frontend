@@ -307,7 +307,7 @@ async function handleReceiveWaste(wasteId) {
     } catch (error) {
         console.error('Receive Waste Error:', error);
         if (error.message !== 'Unauthorized or Forbidden') {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ver');
         }
     }
 }
@@ -550,7 +550,7 @@ function loadContent(contentHtml) {
     const scanQRButton = document.getElementById('scanQRButton');
     if (scanQRButton) {
         scanQRButton.addEventListener('click', async () => {
-            const wasteId = prompt('จำลองการสแกน QR Code: กรอก ID ของเศษอาหารที่ต้องการยืนยันการส่งมอบ'); // Simulates QR scan
+            const wasteId = prompt('จำลองการสแกน QR Code: กรุณากรอก ID ของเศษอาหารที่ต้องการยืนยันการส่งมอบ');
             if (wasteId) {
                 await handleConfirmDelivery(wasteId);
             } else {
@@ -1011,7 +1011,7 @@ function getReceivedWasteHtml(receivedItems = []) {
                         <p><strong>วันที่โพสต์:</strong> ${date}</p>
                         <p><strong>จากโรงเรียน:</strong> ${item.school ? item.school.instituteName : 'ไม่ระบุโรงเรียน'}</p>
                         <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
-                        <p><strong>สถานะส่งมอบ:</strong> ${deliveredStatus}</p>
+                        <p><strong>สถานะส่งมอบ:</strong> <span class="${item.isDelivered ? 'status-delivered' : 'status-pending'}">${deliveredStatus}</span></p>
                     </div>
                     ${!item.isDelivered ? `
                         <button class="show-qr-button" data-id="${item._id}">แสดง QR Code</button>
