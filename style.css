@@ -32,6 +32,8 @@ body {
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     text-align: center;
+    position: relative; /* Ensure z-index works for header content */
+    z-index: 100; /* Header should be above almost everything else */
 }
 
 .top-bar {
@@ -55,7 +57,7 @@ body {
     color: var(--dark-text);
     font-weight: bold;
     position: relative; /* Ensure z-index works */
-    z-index: 100; /* Bring sign-in button to front */
+    z-index: 101; /* Sign-in button above header content */
 }
 
 .hero-section {
@@ -84,7 +86,7 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     position: relative;
-    z-index: 0; /* Ensure content-section is behind its children with z-index 2+ */
+    z-index: 0; /* Base z-index for content-section */
 }
 
 /* Add overlay to make text and buttons stand out */
@@ -96,7 +98,7 @@ body {
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.6); /* Increased opacity for better white text readability */
-    z-index: 1; /* Overlay is above content-section but below loaded HTML */
+    z-index: 1; /* Overlay is above background-image but below any content with z-index > 1 */
 }
 
 /* Styles for the main page content layout */
@@ -106,102 +108,62 @@ body {
     align-items: center;
     width: 100%;
     max-width: 1000px; /* Limit overall width for better layout */
-    position: relative; /* Ensure z-index works */
-    z-index: 2; /* Main page content above overlay */
+    position: relative;
+    z-index: 2; /* Main page content above the overlay */
 }
-
-.main-question-text {
-    color: var(--light-text); /* White color */
-    font-size: 1.8em; /* Adjust size as needed */
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
-    margin-bottom: 40px; /* Space between question and cards */
-    text-align: center; /* Ensure it's centered */
-}
-
-.cards-and-descriptions-wrapper {
-    display: flex;
-    justify-content: center;
-    gap: 40px; /* Space between the two card-description groups */
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-    width: 100%;
-}
-
-.card-with-description {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center card and text horizontally */
-    text-align: center; /* Center text within its own block */
-    max-width: 450px; /* Max width for each card group */
-}
-
-.card {
-    background-color: var(--header-bg); /* White background for the card itself */
-    border-radius: 15px;
-    box-shadow: var(--card-shadow);
-    overflow: hidden;
-    width: 100%; /* Take full width of its parent (.card-with-description) */
-    padding-bottom: 20px; /* Padding inside the card for button */
-    margin-bottom: 20px; /* Space between card and description text */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.card-image {
-    width: 100%;
-    height: 280px;
-    object-fit: cover;
-    display: block;
-    border-bottom: 5px solid var(--primary-blue);
-}
-
-.button {
-    background-color: var(--primary-blue);
-    color: var(--light-text);
-    border: none;
-    padding: 15px 30px;
-    border-radius: 30px;
-    font-size: 1.2em;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 20px; /* Space between image and button */
-}
-
-.button:hover {
-    background-color: #0056b3;
-}
-
-.card-description-text {
-    color: var(--light-text); /* White color for description text */
-    font-size: 0.95em; /* Adjust size as needed */
-    line-height: 1.4;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
-    max-width: 80%; /* Limit width for better readability */
-}
-
 
 /* Styles for login pages */
-.login-container {
-    background-color: var(--header-bg);
-    padding: 30px;
+.login-container,
+.school-dashboard-container, /* Adjusted z-index for dashboard pages */
+.farmer-dashboard-container, /* Adjusted z-index for dashboard pages */
+.add-waste-container, /* Adjusted z-index for add waste page */
+.pending-delivery-container, /* Adjusted z-index for pending delivery page */
+.received-waste-container, /* Adjusted z-index for received waste page */
+.qr-code-container, /* Adjusted z-index for QR code page */
+.analysis-container, /* Adjusted z-index for analysis page */
+.edit-profile-container, /* Adjusted z-index for edit profile page */
+.knowledge-container { /* Adjusted z-index for knowledge page */
+    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
     border-radius: 15px;
+    padding: 30px;
     box-shadow: var(--card-shadow);
     width: 100%;
-    max-width: 500px;
+    max-width: 1000px; /* Max width for general content containers */
     text-align: center;
-    position: relative; /* Ensure z-index works */
-    z-index: 2; /* Login form above overlay */
+    position: relative; /* Essential for z-index to work */
+    z-index: 2; /* Ensure these content containers are above the general overlay */
+    box-sizing: border-box; /* Include padding in width/height */
 }
 
-.login-container h2 {
-    color: var(--dark-text);
+/* Specific max-widths for certain containers */
+.login-container { max-width: 500px; }
+.add-waste-container { max-width: 900px; }
+.post-details-container { max-width: 800px; }
+.analysis-container { max-width: 900px; }
+.edit-profile-container { max-width: 600px; }
+.knowledge-container { max-width: 900px; }
+
+
+/* General styles for headers within containers */
+.login-container h2,
+.school-dashboard-container h2,
+.farmer-dashboard-container h2,
+.add-waste-container h2,
+.pending-delivery-container h2,
+.received-waste-container h2,
+.qr-code-container h2,
+.analysis-container h2,
+.edit-profile-container h2,
+.knowledge-container h2 {
+    color: var(--light-text);
     margin-bottom: 25px;
-    font-size: 2em;
+    font-size: 2.2em;
     font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    text-align: center;
 }
 
+/* Form group styles */
 .form-group {
     margin-bottom: 20px;
     text-align: left;
@@ -218,6 +180,8 @@ body {
 .form-group input[type="email"],
 .form-group input[type="password"],
 .form-group input[type="tel"],
+.form-group input[type="number"],
+.form-group input[type="date"],
 .form-group select {
     width: calc(100% - 20px); /* Adjust for padding */
     padding: 12px 10px;
@@ -226,6 +190,8 @@ body {
     font-size: 1em;
     box-sizing: border-box; /* Include padding in width */
     transition: border-color 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent white input background */
+    color: var(--dark-text);
 }
 
 .form-group input:focus,
@@ -245,6 +211,8 @@ body {
     min-height: 80px;
     resize: vertical;
     transition: border-color 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: var(--dark-text);
 }
 
 .form-group textarea:focus {
@@ -266,6 +234,8 @@ body {
     transition: background-color 0.3s ease;
     width: 100%;
     margin-top: 15px;
+    position: relative; /* Ensure it's clickable */
+    z-index: 5;
 }
 
 .login-button:hover {
@@ -283,6 +253,8 @@ body {
     transition: background-color 0.3s ease;
     margin-top: 10px;
     width: 100%;
+    position: relative; /* Ensure it's clickable */
+    z-index: 5;
 }
 
 .back-button:hover {
@@ -295,34 +267,22 @@ body {
     margin-top: 10px;
 }
 
-/* Styles for School Dashboard */
-.school-dashboard-container {
-    display: flex;
-    flex-direction: column; /* Stack content area and buttons vertically */
-    width: 100%;
-    max-width: 1200px; /* Adjust max width for dashboard */
-    height: 80vh; /* ให้มีความสูงเพื่อให้เห็น scroll ได้ถ้าข้อมูลเยอะ */
-    background-color: transparent; /* พื้นหลังโปร่งใสเพราะมี overlay อยู่แล้ว */
-    z-index: 2; /* ให้อยู่เหนือ background overlay */
-    padding: 20px;
-    box-sizing: border-box; /* Include padding in width/height */
-}
-
+/* Dashboard specific content area and sidebar */
 .dashboard-content-area {
     display: flex;
-    flex-grow: 1; /* Allow content area to take available space */
-    background-color: var(--header-bg); /* White background for the main content area */
+    flex-grow: 1;
+    background-color: var(--header-bg);
     border-radius: 15px;
     box-shadow: var(--card-shadow);
-    overflow: hidden; /* Hide scrollbars if content overflows */
-    margin-bottom: 20px; /* Space between content and buttons */
-    position: relative; /* For z-index to work correctly inside */
-    z-index: 3; /* Ensure content is above lower z-index elements */
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 3; /* Content area above main containers background */
 }
 
 .sidebar {
-    width: 250px; /* Fixed width for sidebar */
-    background-color: var(--sidebar-bg); /* Dark background */
+    width: 250px;
+    background-color: var(--sidebar-bg);
     color: var(--light-text);
     padding: 20px;
     box-sizing: border-box;
@@ -331,35 +291,37 @@ body {
     align-items: center;
     border-top-left-radius: 15px;
     border-bottom-left-radius: 15px;
-    position: relative; /* Ensure z-index works for sidebar content */
+    position: relative;
     z-index: 4; /* Sidebar above main content area */
 }
 
 .main-display-area {
-    flex-grow: 1; /* Take remaining space */
+    flex-grow: 1;
     padding: 20px;
-    overflow-y: auto; /* Enable vertical scrolling if content overflows */
-    position: relative; /* Ensure z-index works for main area content */
+    overflow-y: auto;
+    position: relative;
     z-index: 3; /* Main display area above lower z-index elements */
 }
 
+/* Data block wrapper */
 .data-block-wrapper {
-    display: flex; /* Changed from grid to flex */
-    flex-direction: column; /* Stack items vertically */
-    gap: 20px; /* Space between data blocks */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
+/* Individual data block */
 .data-block {
-    background-color: var(--data-block-bg); /* Light blue background */
+    background-color: var(--data-block-bg);
     border-radius: 10px;
     padding: 15px;
     display: flex;
     align-items: center;
     gap: 15px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Ensure it takes full width in the column layout */
-    position: relative; /* For positioning details/delete button */
-    z-index: 5; /* Ensure data blocks are on top of everything within main-display-area */
+    width: 100%;
+    position: relative;
+    z-index: 5; /* Ensure data blocks are on top within main-display-area */
 }
 
 .data-item-image {
@@ -370,7 +332,7 @@ body {
 }
 
 .data-item-details {
-    flex-grow: 1; /* Allow details to take up space */
+    flex-grow: 1;
 }
 
 .data-item-details p {
@@ -383,8 +345,12 @@ body {
     font-weight: 600;
 }
 
-/* Details button in data block */
-.details-button {
+/* Buttons inside data blocks */
+.details-button,
+.delete-button,
+.receive-waste-button,
+.scan-qr-button,
+.show-qr-button {
     background-color: var(--primary-blue);
     color: var(--light-text);
     border: none;
@@ -393,77 +359,39 @@ body {
     font-size: 0.85em;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    white-space: nowrap; /* Prevent text wrapping */
-    position: relative; /* Ensure it's clickable */
-    z-index: 6; /* Ensure buttons are above other content within data-block */
-}
-
-.details-button:hover {
-    background-color: #0056b3;
-}
-
-/* Delete button in data block */
-.delete-button {
-    background-color: #dc3545; /* Red color for delete */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
     white-space: nowrap;
-    margin-left: 10px; /* Space from details */
-    position: relative; /* Ensure it's clickable */
-    z-index: 6;
+    position: relative; /* Crucial for clickability */
+    z-index: 6; /* Ensure these buttons are above other elements in data block */
 }
 
-.delete-button:hover {
-    background-color: #c82333;
-}
+.details-button:hover { background-color: #0056b3; }
+.delete-button { background-color: #dc3545; margin-left: 10px; }
+.delete-button:hover { background-color: #c82333; }
+.receive-waste-button { background-color: #00bcd4; margin-right: 10px; }
+.receive-waste-button:hover { background-color: #0097a7; }
+.scan-qr-button { background-color: #fd7e14; margin-left: 10px; }
+.scan-qr-button:hover { background-color: #e66a00; }
+.show-qr-button { background-color: #6f42c1; margin-left: 10px; }
+.show-qr-button:hover { background-color: #5d35a6; }
 
-/* Receive Waste Button */
-.receive-waste-button {
-    background-color: #00bcd4; /* Cyan/light blue for receive */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-    margin-right: 10px; /* Space from details */
-    position: relative; /* Ensure it's clickable */
-    z-index: 6;
-}
-
-.receive-waste-button:hover {
-    background-color: #0097a7;
-}
-
-/* Received Status Text */
-.received-status {
-    font-size: 0.9em;
-    font-weight: 600;
-    color: #28a745; /* Green */
-    white-space: nowrap;
-    margin-right: 10px;
-    position: relative; /* Ensure it's visible */
-    z-index: 6;
-}
-
-
+/* Dashboard global buttons */
 .dashboard-buttons {
     display: flex;
     justify-content: space-between;
     width: 100%;
     gap: 20px;
+    position: relative;
     z-index: 10; /* Bring buttons to front */
-    position: relative; /* Needed for z-index to work */
 }
 
-.add-data-button {
+.dashboard-buttons .button,
+.dashboard-buttons .back-button,
+.add-data-button,
+.analysis-button,
+.edit-profile-button,
+.knowledge-button,
+.pending-delivery-button,
+.received-waste-button-list {
     background-color: var(--primary-blue);
     color: var(--light-text);
     border: none;
@@ -473,137 +401,37 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    flex-grow: 1; /* Allow buttons to take available space */
-    max-width: 300px; /* Limit button width */
-}
-
-.add-data-button:hover {
-    background-color: #0056b3;
-}
-
-/* Analysis button */
-.analysis-button {
-    background-color: #28a745; /* Green color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
     flex-grow: 1;
     max-width: 300px;
+    position: relative; /* Ensure they are clickable */
+    z-index: 11; /* Above other dashboard elements */
 }
 
-.analysis-button:hover {
-    background-color: #218838;
-}
+.add-data-button:hover { background-color: #0056b3; }
+.analysis-button { background-color: #28a745; }
+.analysis-button:hover { background-color: #218838; }
+.edit-profile-button { background-color: #ffc107; color: var(--dark-text); }
+.edit-profile-button:hover { background-color: #e0a800; }
+.knowledge-button { background-color: #17a2b8; }
+.knowledge-button:hover { background-color: #138496; }
+.pending-delivery-button { background-color: #fd7e14; }
+.pending-delivery-button:hover { background-color: #e66a00; }
+.received-waste-button-list { background-color: #6f42c1; }
+.received-waste-button-list:hover { background-color: #5d35a6; }
+.dashboard-buttons .back-button { background-color: #6c757d; }
+.dashboard-buttons .back-button:hover { background-color: #5a6268; }
 
-/* Edit Profile button */
-.edit-profile-button {
-    background-color: #ffc107; /* Yellow color */
-    color: var(--dark-text); /* Dark text for yellow background */
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.edit-profile-button:hover {
-    background-color: #e0a800;
-}
-
-/* Knowledge Button */
-.knowledge-button {
-    background-color: #17a2b8; /* Teal color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.knowledge-button:hover {
-    background-color: #138496;
-}
-
-/* Pending Delivery Button */
-.pending-delivery-button {
-    background-color: #fd7e14; /* Orange color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.pending-delivery-button:hover {
-    background-color: #e66a00;
-}
-
-/* Received Waste Button (for farmer list) */
-.received-waste-button-list {
-    background-color: #6f42c1; /* Purple color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.received-waste-button-list:hover {
-    background-color: #5d35a6;
-}
-
-
-/* Back button on dashboard needs to be styled like other buttons */
-.dashboard-buttons .back-button {
-    background-color: #6c757d; /* Grey color for back button */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px; /* Match add data button padding */
-    border-radius: 25px;
-    font-size: 1.1em; /* Match add data button font size */
-    font-weight: 600; /* Match add data button font weight */
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.back-button:hover {
-    background-color: #5a6268;
-}
 
 /* Styles for Add Waste Data Page */
 .add-waste-container {
-    background-color: transparent;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 900px;
-    z-index: 2;
-    padding: 20px;
-    box-sizing: border-box;
+    position: relative; /* Ensure z-index works */
+    z-index: 2; /* Container above overlay */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -619,11 +447,8 @@ body {
 }
 
 .add-waste-container form {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
+    background-color: transparent; /* Form background transparent */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -651,6 +476,7 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .upload-button-label {
@@ -712,6 +538,8 @@ body {
     max-width: 600px;
     gap: 20px;
     margin-top: 20px;
+    position: relative; /* Ensure buttons are clickable */
+    z-index: 5;
 }
 
 .add-waste-container .back-button,
@@ -731,7 +559,8 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 1000px;
-    z-index: 2;
+    position: relative; /* Ensure z-index works */
+    z-index: 2; /* Main content above overlay */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -758,6 +587,8 @@ body {
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+    position: relative;
+    z-index: 3; /* Ensure lists are above background elements */
 }
 
 /* QR Code Display Styles */
@@ -768,10 +599,12 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     margin-bottom: 20px;
     text-align: center;
-    width: fit-content; /* Adjust width to content */
+    width: fit-content;
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    z-index: 3;
 }
 .qr-code-container .qr-code-text {
     font-size: 1.2em;
@@ -796,7 +629,9 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
     white-space: nowrap;
-    margin-left: 10px; /* Space from details */
+    margin-left: 10px;
+    position: relative;
+    z-index: 6;
 }
 
 .scan-qr-button:hover {
@@ -813,7 +648,9 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
     white-space: nowrap;
-    margin-left: 10px; /* Space from details */
+    margin-left: 10px;
+    position: relative;
+    z-index: 6;
 }
 .show-qr-button:hover {
     background-color: #5d35a6;
@@ -828,8 +665,8 @@ body {
     padding: 15px 0;
     font-size: 0.85em;
     width: 100%;
-    position: relative; /* Ensure z-index works */
-    z-index: 50; /* Bring footer above potential overlays */
+    position: relative;
+    z-index: 50; /* Ensure footer is always visible */
     display: flex;
     flex-direction: column;
     align-items: center;
