@@ -420,6 +420,15 @@ body {
     background-color: #0097a7;
 }
 
+/* NEW: Received Status Text */
+.received-status {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #28a745; /* Green */
+    white-space: nowrap;
+    margin-right: 10px;
+}
+
 
 .dashboard-buttons {
     display: flex;
@@ -501,6 +510,44 @@ body {
 
 .knowledge-button:hover {
     background-color: #138496;
+}
+
+/* NEW: Pending Delivery Button */
+.pending-delivery-button {
+    background-color: #fd7e14; /* Orange color */
+    color: var(--light-text);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.pending-delivery-button:hover {
+    background-color: #e66a00;
+}
+
+/* NEW: Received Waste Button (for farmer list) */
+.received-waste-button-list {
+    background-color: #6f42c1; /* Purple color */
+    color: var(--light-text);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.received-waste-button-list:hover {
+    background-color: #5d35a6;
 }
 
 
@@ -1167,7 +1214,7 @@ body {
         font-size: 1.8em;
     }
     .chart-container {
-        height: 300px;
+        height: 250px;
     }
 
     /* Edit Profile Page Responsive */
@@ -1254,4 +1301,8 @@ body {
         font-size: 1.5em;
     }
 
-   
+    /* Knowledge Page Responsive */
+    .knowledge-container h2 {
+        font-size: 1.5em;
+    }
+}
