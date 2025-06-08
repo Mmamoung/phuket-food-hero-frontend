@@ -569,7 +569,7 @@ function getMainPageHtml() {
                 <div class="card-with-description">
                     <div class="card">
                         <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
-                        <img src="images/school_image.jpg" alt="รูปภาพโรงเรียน" class="card-image">
+                        <img src="images/school.jpg" alt="รูปภาพโรงเรียน" class="card-image">
                         <button class="button" id="schoolButton">โรงเรียน</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อลงทะเบียนและจัดการเศษอาหารเหลือจากโรงเรียนของคุณ</p>
@@ -577,7 +577,7 @@ function getMainPageHtml() {
                 <div class="card-with-description">
                     <div class="card">
                         <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
-                        <img src="images/farmer_image.jpg" alt="รูปภาพเกษตรกร" class="card-image">
+                        <img src="images/farmer.jpg" alt="รูปภาพเกษตรกร" class="card-image">
                         <button class="button" id="farmerButton">เกษตรกร</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อเลือกประเภทเศษอาหารที่คุณต้องการนำไปใช้ประโยชน์</p>
