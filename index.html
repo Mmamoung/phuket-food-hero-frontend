@@ -19,7 +19,7 @@
                 <span>123456@gmail.com</span>
             </div>
             <div class="sign-in">
-                <a href="#" id="signInLink">sign-in</a> <!-- *** ตรวจสอบว่ามี id="signInLink" ตรงนี้เป๊ะๆ *** -->
+                <a href="#" id="signInLink">sign-in</a> <!-- ตรวจสอบ ID ตรงนี้ -->
             </div>
         </div>
         <div class="hero-section">
@@ -28,16 +28,18 @@
     </header>
 
     <main id="app-container" class="content-section">
+        <!-- Background Overlay (moved from ::before pseudo-element for better z-index control) -->
+        <div class="background-overlay"></div>
         <!-- Content will be loaded here by JavaScript -->
     </main>
 
     <footer class="footer">
-        <p>© 2025 PHUKET FOOD HERO. All rights reserved.</p>
+        <p>&copy; 2025 PHUKET FOOD HERO. All rights reserved.</p>
         <div class="contact-email">
             <a href="mailto:pawisrongsin@gmail.com">ติดต่อเรา: pawisrongsin@gmail.com</a>
         </div>
     </footer>
 
-    <script src="script.js"></script> <!-- *** ตรวจสอบว่า script.js ถูกโหลดที่นี่ (ก่อนปิด </body>) *** -->
+    <script src="script.js"></script> <!-- ตรวจสอบตำแหน่ง Script tag -->
 </body>
 </html>
