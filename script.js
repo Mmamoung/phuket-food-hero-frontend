@@ -130,7 +130,9 @@ async function renderDataBlocks(data, targetWrapperId) {
     const wrapper = document.querySelector(targetWrapperId);
     if (!wrapper) return;
 
-    wrapper.innerHTML = '';
+    wrapper.innerHTML = ''; // Clear previous content
+
+    console.log(`Rendering data blocks for ${targetWrapperId}. Data received:`, data); // Log data received
 
     if (data.length === 0) {
         wrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่พบข้อมูล</p>';
@@ -176,7 +178,7 @@ async function renderDataBlocks(data, targetWrapperId) {
             <img src="${item.imageUrl || 'https://placehold.co/150x120/ADD8E6/000000?text=No+Image'}" alt="Waste Image" class="data-item-image">
             <div class="data-item-details">
                 <p><strong>เมนู:</strong> ${item.menu}</p>
-                <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
+                <p><strong>ปริมาณ:</b> ${item.weight} kg</p>
                 <p><strong>วันที่:</strong> ${date} (${postedAt})</p>
                 <p><strong>จาก:</strong> ${item.school ? item.school.instituteName : 'ไม่ระบุโรงเรียน'}</p>
                 <p><strong>ติดต่อ:</strong> ${item.school ? item.school.contactNumber : 'ไม่ระบุ'}</p>
@@ -307,7 +309,7 @@ async function handleReceiveWaste(wasteId) {
     } catch (error) {
         console.error('Receive Waste Error:', error);
         if (error.message !== 'Unauthorized or Forbidden') {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ver');
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
         }
     }
 }
@@ -340,8 +342,11 @@ async function handleConfirmDelivery(wasteId) {
 function loadContent(contentHtml) {
     const appContainer = document.getElementById('app-container');
     appContainer.innerHTML = contentHtml;
+    console.log("loadContent called. HTML loaded into app-container.");
 
-    // --- Common Event Listeners ---
+    // --- Common Event Listeners (attached after content is loaded) ---
+    // These listeners are attached every time contentHtml is loaded,
+    // ensuring they always work for newly rendered elements.
     if (document.getElementById('backToMain')) {
         document.getElementById('backToMain').addEventListener('click', loadMainPage);
     }
@@ -393,9 +398,13 @@ function loadContent(contentHtml) {
     }
 
 
-    // --- Page Specific Event Listeners ---
+    // --- Page Specific Event Listeners (attached after content is loaded) ---
+    // These are for forms/buttons that are present only on specific pages.
     if (document.getElementById('purposeSelect')) {
         document.getElementById('purposeSelect').addEventListener('change', toggleOtherPurposeInput);
+    }
+    if (document.getElementById('editPurposeSelect')) { // For edit profile page
+        document.getElementById('editPurposeSelect').addEventListener('change', toggleEditOtherPurposeInput);
     }
 
     if (document.getElementById('schoolButton')) {
@@ -447,7 +456,6 @@ function loadContent(contentHtml) {
         });
     }
 
-    // --- Generic Login Form Submission ---
     const genericLoginForm = document.getElementById('genericLoginForm');
     if (genericLoginForm) {
         genericLoginForm.addEventListener('submit', async (e) => {
@@ -459,8 +467,6 @@ function loadContent(contentHtml) {
         });
     }
 
-
-    // --- Add Waste Data Form ---
     const addWasteForm = document.getElementById('addWasteForm');
     if (addWasteForm) {
         addWasteForm.addEventListener('submit', async (e) => {
@@ -510,43 +516,53 @@ function loadContent(contentHtml) {
         }
     }
 
-    // --- Dashboard specific buttons ---
+    const editProfileForm = document.getElementById('editProfileForm');
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            alert('คุณกดบันทึกข้อมูลแก้ไขแล้ว! (ยังไม่ส่งข้อมูลไปยัง Backend)');
+            // TODO: Phase 2 - Implement Backend API to update user profile
+            // Example:
+            // const formData = new FormData(editProfileForm);
+            // const data = Object.fromEntries(formData.entries());
+            // const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/profile', {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(data)
+            // });
+            loadSchoolDashboard(); // Go back to dashboard
+        });
+    }
+
+
+    // --- Dashboard specific buttons (always available on dashboards) ---
     if (document.getElementById('addWasteDataButton')) {
         document.getElementById('addWasteDataButton').addEventListener('click', () => {
             loadContent(getAddWasteDataHtml());
         });
     }
-    // Event listener for "ดูรายงานวิเคราะห์" button
     if (document.getElementById('viewAnalysisButton')) {
         document.getElementById('viewAnalysisButton').addEventListener('click', loadAnalysisPage);
     }
-    // Event listener for "แก้ไขข้อมูล" button
     if (document.getElementById('editProfileButton')) {
         document.getElementById('editProfileButton').addEventListener('click', loadEditProfilePage);
     }
-    // Event listener for "ความรู้เรื่องการกำจัดขยะ" button
     if (document.getElementById('knowledgeButton')) {
         document.getElementById('knowledgeButton').addEventListener('click', loadKnowledgePage);
     }
-    // NEW: Event listener for "รายการเศษอาหารที่ต้องส่ง" button (School)
     if (document.getElementById('pendingDeliveryButton')) {
         document.getElementById('pendingDeliveryButton').addEventListener('click', loadPendingDeliveryPage);
     }
-    // NEW: Event listener for "รายการเศษอาหารที่รับแล้ว" button (Farmer)
     if (document.getElementById('receivedWasteButton')) {
         document.getElementById('receivedWasteButton').addEventListener('click', loadReceivedWastePage);
     }
 
-
-    // --- Farmer Dashboard Filter button ---
+    // --- Farmer Dashboard Filter button (only on farmer dashboard) ---
     if (document.getElementById('filterSearchButton')) {
         document.getElementById('filterSearchButton').addEventListener('click', applyFarmerFilters);
     }
 
-    // NEW: Event listener for School Scan QR button (on pending delivery page)
-    // This listener is specific to the pending delivery page, so it needs to be attached after that page is loaded
-    // It's also part of the loadContent function now, so it will be called automatically
-    // The actual QR code scanning will be a prompt for simplicity for now
+    // NEW: School Scan QR button (on pending delivery page)
     const scanQRButton = document.getElementById('scanQRButton');
     if (scanQRButton) {
         scanQRButton.addEventListener('click', async () => {
