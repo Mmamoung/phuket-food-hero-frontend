@@ -130,9 +130,7 @@ async function renderDataBlocks(data, targetWrapperId) {
     const wrapper = document.querySelector(targetWrapperId);
     if (!wrapper) return;
 
-    wrapper.innerHTML = ''; // Clear previous content
-
-    console.log(`Rendering data blocks for ${targetWrapperId}. Data received:`, data); // Log data received
+    wrapper.innerHTML = '';
 
     if (data.length === 0) {
         wrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่พบข้อมูล</p>';
@@ -309,7 +307,7 @@ async function handleReceiveWaste(wasteId) {
     } catch (error) {
         console.error('Receive Waste Error:', error);
         if (error.message !== 'Unauthorized or Forbidden') {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ver');
         }
     }
 }
@@ -342,11 +340,8 @@ async function handleConfirmDelivery(wasteId) {
 function loadContent(contentHtml) {
     const appContainer = document.getElementById('app-container');
     appContainer.innerHTML = contentHtml;
-    console.log("loadContent called. HTML loaded into app-container."); // Log for debugging
 
     // --- Common Event Listeners ---
-    // These listeners are attached every time contentHtml is loaded,
-    // ensuring they always work for newly rendered elements.
     if (document.getElementById('backToMain')) {
         document.getElementById('backToMain').addEventListener('click', loadMainPage);
     }
@@ -362,14 +357,18 @@ function loadContent(contentHtml) {
     if (document.getElementById('backFromGenericLogin')) {
         document.getElementById('backFromGenericLogin').addEventListener('click', loadMainPage);
     }
+    // Event listener for back from analysis page
     if (document.getElementById('backFromAnalysis')) {
         document.getElementById('backFromAnalysis').addEventListener('click', loadSchoolDashboard);
     }
+    // Event listener for back from edit profile page
     if (document.getElementById('backFromEditProfile')) {
         document.getElementById('backFromEditProfile').addEventListener('click', loadSchoolDashboard);
     }
+    // Event listener for back from knowledge page
     if (document.getElementById('backFromKnowledge')) {
         document.getElementById('backFromKnowledge').addEventListener('click', (event) => {
+             // Go back to the dashboard of the current role
             const userRole = localStorage.getItem('userRole');
             if (userRole === 'school') {
                 loadSchoolDashboard();
@@ -380,24 +379,23 @@ function loadContent(contentHtml) {
             }
         });
     }
+    // NEW: Event listener for back from received waste list
     if (document.getElementById('backFromReceivedWaste')) {
         document.getElementById('backFromReceivedWaste').addEventListener('click', loadFarmerDashboard);
     }
+    // NEW: Event listener for back from pending delivery list
     if (document.getElementById('backFromPendingDelivery')) {
         document.getElementById('backFromPendingDelivery').addEventListener('click', loadSchoolDashboard);
     }
+    // NEW: Event listener for back from QR scan page
     if (document.getElementById('backFromQRScan')) {
-        document.getElementById('backFromQRScan').addEventListener('click', loadPendingDeliveryPage);
+        document.getElementById('backFromQRScan').addEventListener('click', loadPendingDeliveryPage); // Back to pending delivery list
     }
 
 
-    // --- Page Specific Event Listeners (attached after content is loaded) ---
-    // These are for forms/buttons that are present only on specific pages.
+    // --- Page Specific Event Listeners ---
     if (document.getElementById('purposeSelect')) {
         document.getElementById('purposeSelect').addEventListener('change', toggleOtherPurposeInput);
-    }
-    if (document.getElementById('editPurposeSelect')) { // For edit profile page
-        document.getElementById('editPurposeSelect').addEventListener('change', toggleEditOtherPurposeInput);
     }
 
     if (document.getElementById('schoolButton')) {
@@ -449,6 +447,7 @@ function loadContent(contentHtml) {
         });
     }
 
+    // --- Generic Login Form Submission ---
     const genericLoginForm = document.getElementById('genericLoginForm');
     if (genericLoginForm) {
         genericLoginForm.addEventListener('submit', async (e) => {
@@ -460,6 +459,8 @@ function loadContent(contentHtml) {
         });
     }
 
+
+    // --- Add Waste Data Form ---
     const addWasteForm = document.getElementById('addWasteForm');
     if (addWasteForm) {
         addWasteForm.addEventListener('submit', async (e) => {
@@ -509,53 +510,43 @@ function loadContent(contentHtml) {
         }
     }
 
-    const editProfileForm = document.getElementById('editProfileForm');
-    if (editProfileForm) {
-        editProfileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            alert('คุณกดบันทึกข้อมูลแก้ไขแล้ว! (ยังไม่ส่งข้อมูลไปยัง Backend)');
-            // TODO: Phase 2 - Implement Backend API to update user profile
-            // Example:
-            // const formData = new FormData(editProfileForm);
-            // const data = Object.fromEntries(formData.entries());
-            // const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/profile', {
-            //     method: 'PUT',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(data)
-            // });
-            loadSchoolDashboard(); // Go back to dashboard
-        });
-    }
-
-
-    // --- Dashboard specific buttons (always available on dashboards) ---
+    // --- Dashboard specific buttons ---
     if (document.getElementById('addWasteDataButton')) {
         document.getElementById('addWasteDataButton').addEventListener('click', () => {
             loadContent(getAddWasteDataHtml());
         });
     }
+    // Event listener for "ดูรายงานวิเคราะห์" button
     if (document.getElementById('viewAnalysisButton')) {
         document.getElementById('viewAnalysisButton').addEventListener('click', loadAnalysisPage);
     }
+    // Event listener for "แก้ไขข้อมูล" button
     if (document.getElementById('editProfileButton')) {
         document.getElementById('editProfileButton').addEventListener('click', loadEditProfilePage);
     }
+    // Event listener for "ความรู้เรื่องการกำจัดขยะ" button
     if (document.getElementById('knowledgeButton')) {
         document.getElementById('knowledgeButton').addEventListener('click', loadKnowledgePage);
     }
+    // NEW: Event listener for "รายการเศษอาหารที่ต้องส่ง" button (School)
     if (document.getElementById('pendingDeliveryButton')) {
         document.getElementById('pendingDeliveryButton').addEventListener('click', loadPendingDeliveryPage);
     }
+    // NEW: Event listener for "รายการเศษอาหารที่รับแล้ว" button (Farmer)
     if (document.getElementById('receivedWasteButton')) {
         document.getElementById('receivedWasteButton').addEventListener('click', loadReceivedWastePage);
     }
 
-    // --- Farmer Dashboard Filter button (only on farmer dashboard) ---
+
+    // --- Farmer Dashboard Filter button ---
     if (document.getElementById('filterSearchButton')) {
         document.getElementById('filterSearchButton').addEventListener('click', applyFarmerFilters);
     }
 
-    // NEW: School Scan QR button (on pending delivery page)
+    // NEW: Event listener for School Scan QR button (on pending delivery page)
+    // This listener is specific to the pending delivery page, so it needs to be attached after that page is loaded
+    // It's also part of the loadContent function now, so it will be called automatically
+    // The actual QR code scanning will be a prompt for simplicity for now
     const scanQRButton = document.getElementById('scanQRButton');
     if (scanQRButton) {
         scanQRButton.addEventListener('click', async () => {
@@ -577,7 +568,7 @@ function getMainPageHtml() {
             <div class="cards-and-descriptions-wrapper">
                 <div class="card-with-description">
                     <div class="card">
-                        <!-- *** คุณต้องเปลี่ยน Path รูปภาพโรงเรียนตรงนี้! *** -->
+                        <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
                         <img src="images/school_image.jpg" alt="รูปภาพโรงเรียน" class="card-image">
                         <button class="button" id="schoolButton">โรงเรียน</button>
                     </div>
@@ -585,7 +576,7 @@ function getMainPageHtml() {
                 </div>
                 <div class="card-with-description">
                     <div class="card">
-                        <!-- *** คุณต้องเปลี่ยน Path รูปภาพเกษตรกรตรงนี้! *** -->
+                        <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
                         <img src="images/farmer_image.jpg" alt="รูปภาพเกษตรกร" class="card-image">
                         <button class="button" id="farmerButton">เกษตรกร</button>
                     </div>
@@ -1072,7 +1063,6 @@ async function loadSchoolDashboard() {
         // TODO: Update to your Render.com Backend URL
         const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/posts');
         const data = await response.json();
-        console.log("Data for school dashboard:", data); // Log data
         renderDataBlocks(data, '#schoolDataBlocks');
     }
     catch (error) {
@@ -1092,7 +1082,6 @@ async function loadFarmerDashboard(filters = {}) {
 
         const response = await authenticatedFetch(url.toString());
         const data = await response.json();
-        console.log("Data for farmer dashboard:", data); // Log data
         renderDataBlocks(data, '#farmerDataBlocks');
 
         // Restore filter values if filters were applied
@@ -1301,1026 +1290,169 @@ async function loadPendingDeliveryPage() {
                                 <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
                                 <p><strong>วันที่โพสต์:</strong> ${date}</p>
                                 <p><strong>ผู้รับ (เกษตรกร):</strong> ${item.receivedBy ? item.receivedBy.name : 'ไม่ระบุ'}</p>
-                                <p><strong>ติดต่อผู้รับ: แก้ไข Path รูปภาพพื้นหลังใน .content-section */
-    background-image: url('images/background_waste.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    position: relative;
-}
-
-/* Add overlay to make text and buttons stand out */
-.content-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6); /* Increased opacity for better white text readability */
-    z-index: 1;
-}
-
-/* Styles for the main page content layout */
-.main-page-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 1000px; /* Limit overall width for better layout */
-    z-index: 2; /* Ensure it's above the overlay */
-}
-
-.main-question-text {
-    color: var(--light-text); /* White color */
-    font-size: 1.8em; /* Adjust size as needed */
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
-    margin-bottom: 40px; /* Space between question and cards */
-    text-align: center; /* Ensure it's centered */
-}
-
-.cards-and-descriptions-wrapper {
-    display: flex;
-    justify-content: center;
-    gap: 40px; /* Space between the two card-description groups */
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-    width: 100%;
-}
-
-.card-with-description {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center card and text horizontally */
-    text-align: center; /* Center text within its own block */
-    max-width: 450px; /* Max width for each card group */
-}
-
-.card {
-    background-color: var(--header-bg); /* White background for the card itself */
-    border-radius: 15px;
-    box-shadow: var(--card-shadow);
-    overflow: hidden;
-    width: 100%; /* Take full width of its parent (.card-with-description) */
-    padding-bottom: 20px; /* Padding inside the card for button */
-    margin-bottom: 20px; /* Space between card and description text */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.card-image {
-    width: 100%;
-    height: 280px;
-    object-fit: cover;
-    display: block;
-    border-bottom: 5px solid var(--primary-blue);
-}
-
-.button {
-    background-color: var(--primary-blue);
-    color: var(--light-text);
-    border: none;
-    padding: 15px 30px;
-    border-radius: 30px;
-    font-size: 1.2em;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 20px; /* Space between image and button */
-}
-
-.button:hover {
-    background-color: #0056b3;
-}
-
-.card-description-text {
-    color: var(--light-text); /* White color for description text */
-    font-size: 0.95em; /* Adjust size as needed */
-    line-height: 1.4;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
-    max-width: 80%; /* Limit width for better readability */
-}
-
-
-/* Styles for login pages */
-.login-container {
-    background-color: var(--header-bg);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: var(--card-shadow);
-    width: 100%;
-    max-width: 500px;
-    text-align: center;
-    z-index: 2;
-}
-
-.login-container h2 {
-    color: var(--dark-text);
-    margin-bottom: 25px;
-    font-size: 2em;
-    font-weight: 700;
-}
-
-.form-group {
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #555;
-}
-
-.form-group input[type="text"],
-.form-group input[type="email"],
-.form-group input[type="password"],
-.form-group input[type="tel"],
-.form-group select {
-    width: calc(100% - 20px); /* Adjust for padding */
-    padding: 12px 10px;
-    border: 1px solid var(--input-border);
-    border-radius: 8px;
-    font-size: 1em;
-    box-sizing: border-box; /* Include padding in width */
-    transition: border-color 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: var(--input-focus-border);
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-}
-
-.form-group textarea {
-    width: calc(100% - 20px);
-    padding: 12px 10px;
-    border: 1px solid var(--input-border);
-    border-radius: 8px;
-    font-size: 1em;
-    box-sizing: border-box;
-    min-height: 80px;
-    resize: vertical;
-    transition: border-color 0.3s ease;
-}
-
-.form-group textarea:focus {
-    outline: none;
-    border-color: var(--input-focus-border);
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-}
-
-
-.login-button {
-    background-color: var(--primary-blue);
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-    margin-top: 15px;
-}
-
-.login-button:hover {
-    background-color: #0056b3;
-}
-
-.back-button {
-    background-color: #6c757d; /* Grey color for back button */
-    color: var(--light-text);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 10px;
-    width: 100%;
-}
-
-.back-button:hover {
-    background-color: #5a6268;
-}
-
-/* Hide other input for dropdown */
-#otherPurposeInput {
-    display: none;
-    margin-top: 10px;
-}
-
-/* Styles for School Dashboard */
-.school-dashboard-container {
-    display: flex;
-    flex-direction: column; /* Stack content area and buttons vertically */
-    width: 100%;
-    max-width: 1200px; /* Adjust max width for dashboard */
-    height: 80vh; /* ให้มีความสูงเพื่อให้เห็น scroll ได้ถ้าข้อมูลเยอะ */
-    background-color: transparent; /* พื้นหลังโปร่งใสเพราะมี overlay อยู่แล้ว */
-    z-index: 2; /* ให้อยู่เหนือ background overlay */
-    padding: 20px;
-    box-sizing: border-box; /* Include padding in width/height */
-}
-
-.dashboard-content-area {
-    display: flex;
-    flex-grow: 1; /* Allow content area to take available space */
-    background-color: var(--header-bg); /* White background for the main content area */
-    border-radius: 15px;
-    box-shadow: var(--card-shadow);
-    overflow: hidden; /* Hide scrollbars if content overflows */
-    margin-bottom: 20px; /* Space between content and buttons */
-}
-
-.sidebar {
-    width: 250px; /* Fixed width for sidebar */
-    background-color: var(--sidebar-bg); /* Dark background */
-    color: var(--light-text);
-    padding: 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-top-left-radius: 15px;
-    border-bottom-left-radius: 15px;
-}
-
-.main-display-area {
-    flex-grow: 1; /* Take remaining space */
-    padding: 20px;
-    overflow-y: auto; /* Enable vertical scrolling if content overflows */
-}
-
-.data-block-wrapper {
-    display: flex; /* Changed from grid to flex */
-    flex-direction: column; /* Stack items vertically */
-    gap: 20px; /* Space between data blocks */
-}
-
-.data-block {
-    background-color: var(--data-block-bg); /* Light blue background */
-    border-radius: 10px;
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Ensure it takes full width in the column layout */
-    position: relative; /* For positioning details/delete button */
-}
-
-.data-item-image {
-    width: 100px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 5px;
-}
-
-.data-item-details {
-    flex-grow: 1; /* Allow details to take up space */
-}
-
-.data-item-details p {
-    margin: 3px 0;
-    font-size: 0.9em;
-    color: var(--dark-text);
-}
-
-.data-item-details strong {
-    font-weight: 600;
-}
-
-/* Details button in data block */
-.details-button {
-    background-color: var(--primary-blue);
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    white-space: nowrap; /* Prevent text wrapping */
-}
-
-.details-button:hover {
-    background-color: #0056b3;
-}
-
-/* Delete button in data block */
-.delete-button {
-    background-color: #dc3545; /* Red color for delete */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-    margin-left: 10px; /* Space from details */
-}
-
-.delete-button:hover {
-    background-color: #c82333;
-}
-
-/* Receive Waste Button */
-.receive-waste-button {
-    background-color: #00bcd4; /* Cyan/light blue for receive */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-    margin-right: 10px; /* Space from details */
-}
-
-.receive-waste-button:hover {
-    background-color: #0097a7;
-}
-
-/* Received Status Text */
-.received-status {
-    font-size: 0.9em;
-    font-weight: 600;
-    color: #28a745; /* Green */
-    white-space: nowrap;
-    margin-right: 10px;
-}
-
-
-.dashboard-buttons {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    gap: 20px;
-    z-index: 10; /* Bring buttons to front */
-    position: relative; /* Needed for z-index to work */
-}
-
-.add-data-button {
-    background-color: var(--primary-blue);
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1; /* Allow buttons to take available space */
-    max-width: 300px; /* Limit button width */
-}
-
-.add-data-button:hover {
-    background-color: #0056b3;
-}
-
-/* Analysis button */
-.analysis-button {
-    background-color: #28a745; /* Green color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.analysis-button:hover {
-    background-color: #218838;
-}
-
-/* Edit Profile button */
-.edit-profile-button {
-    background-color: #ffc107; /* Yellow color */
-    color: var(--dark-text); /* Dark text for yellow background */
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.edit-profile-button:hover {
-    background-color: #e0a800;
-}
-
-/* Knowledge Button */
-.knowledge-button {
-    background-color: #17a2b8; /* Teal color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.knowledge-button:hover {
-    background-color: #138496;
-}
-
-/* Pending Delivery Button */
-.pending-delivery-button {
-    background-color: #fd7e14; /* Orange color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.pending-delivery-button:hover {
-    background-color: #e66a00;
-}
-
-/* Received Waste Button (for farmer list) */
-.received-waste-button-list {
-    background-color: #6f42c1; /* Purple color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.received-waste-button-list:hover {
-    background-color: #5d35a6;
-}
-
-
-/* Back button on dashboard needs to be styled like other buttons */
-.dashboard-buttons .back-button {
-    background-color: #6c757d; /* Grey color for back button */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px; /* Match add data button padding */
-    border-radius: 25px;
-    font-size: 1.1em; /* Match add data button font size */
-    font-weight: 600; /* Match add data button font weight */
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.back-button:hover {
-    background-color: #5a6268;
-}
-
-/* Styles for Add Waste Data Page */
-.add-waste-container {
-    background-color: transparent;
-    width: 100%;
-    max-width: 900px;
-    z-index: 2;
-    padding: 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.add-waste-container h2 {
-    color: var(--light-text);
-    margin-bottom: 30px;
-    font-size: 2.2em;
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    text-align: center;
-}
-
-.add-waste-container form {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.form-row {
-    display: flex;
-    width: 100%;
-    gap: 30px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.upload-group {
-    background-color: var(--upload-box-bg);
-    border-radius: 15px;
-    width: 300px;
-    height: 250px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.upload-button-label {
-    color: var(--light-text);
-    font-size: 1.2em;
-    font-weight: 600;
-    text-align: center;
-    padding: 10px;
-    z-index: 1;
-}
-
-.hidden-input {
-    display: none;
-}
-
-#imagePreview {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 15px;
-    z-index: 0;
-}
-
-.form-fields-group {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    max-width: 400px;
-}
-
-.add-waste-container .form-group label {
-    color: var(--light-text);
-    font-size: 1.1em;
-}
-
-.add-waste-container input[type="text"],
-.add-waste-container input[type="number"],
-.add-waste-container input[type="date"] {
-    background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid var(--input-border);
-    border-radius: 8px;
-    font-size: 1em;
-    box-sizing: border-box;
-    color: var(--dark-text);
-}
-
-.add-waste-container input::placeholder {
-    color: #666;
-}
-
-.form-buttons {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 600px;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.add-waste-container .back-button,
-.add-waste-container .login-button {
-    flex-grow: 1;
-    max-width: 250px;
-}
-
-
-/* Pending Delivery Page Styles */
-.pending-delivery-container,
-.received-waste-container,
-.qr-code-container {
-    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 1000px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.pending-delivery-container h2,
-.received-waste-container h2,
-.qr-code-container h2 {
-    color: var(--light-text);
-    margin-bottom: 30px;
-    font-size: 2.2em;
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    text-align: center;
-}
-
-.pending-list-area,
-.received-list-area {
-    width: 100%;
-    max-height: 60vh; /* Allow scrolling for lists */
-    overflow-y: auto;
-    background-color: var(--header-bg);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-/* QR Code Display Styles */
-.qr-code-container .qr-code-box {
-    background-color: var(--header-bg);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-    text-align: center;
-    width: fit-content; /* Adjust width to content */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-.qr-code-container .qr-code-text {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: var(--dark-text);
-    margin-bottom: 15px;
-}
-.qr-code-container img {
-    border: 1px solid #ccc;
-    padding: 5px;
-    background-color: white;
-}
-
-/* Specific button for QR Scan (school) */
-.scan-qr-button {
-    background-color: #fd7e14; /* Orange */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-    margin-left: 10px; /* Space from details */
+                                <p><strong>ติดต่อผู้รับ:</strong> ${item.receivedBy ? item.receivedBy.contactNumber : 'ไม่ระบุ'}</p>
+                                <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
+                            </div>
+                            <button class="scan-qr-button" data-id="${item._id}">สแกน QR Code เพื่อยืนยัน</button>
+                        </div>
+                    `;
+                    pendingDeliveryBlocksWrapper.insertAdjacentHTML('beforeend', pendingItemHtml);
+                });
+                // Attach event listeners for scan QR buttons after rendering
+                pendingDeliveryBlocksWrapper.querySelectorAll('.scan-qr-button').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const wasteId = e.target.dataset.id;
+                        const qrValue = prompt('จำลองการสแกน QR Code: กรุณากรอก Waste ID ที่แสดงบน QR Code ของเกษตรกรเพื่อยืนยันการส่งมอบ');
+                        if (qrValue && qrValue === wasteId) {
+                            await handleConfirmDelivery(wasteId);
+                        } else if (qrValue) {
+                            alert('รหัส QR Code ไม่ตรงกับรายการที่เลือก');
+                        } else {
+                            alert('กรุณากรอก ID เศษอาหารเพื่อยืนยัน');
+                        }
+                    });
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load pending delivery data:', error);
+        document.querySelector('#pendingDeliveryBlocks').innerHTML = '<p style="color: red; text-align: center;">ไม่สามารถโหลดข้อมูลรายการที่ต้องส่งได้</p>';
+    }
+}
+
+
+// NEW: Load Received Waste Page Function (for Farmer)
+async function loadReceivedWastePage() {
+    loadContent(getReceivedWasteHtml()); // Load empty structure first
+    try {
+        // TODO: Update to your Render.com Backend URL
+        const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/received-history');
+        const data = await response.json();
+        
+        const receivedWasteBlocksWrapper = document.querySelector('#receivedWasteBlocks');
+        if (receivedWasteBlocksWrapper) {
+            receivedWasteBlocksWrapper.innerHTML = ''; // Clear loading message
+            if (data.length === 0) {
+                receivedWasteBlocksWrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ยังไม่มีรายการเศษอาหารที่รับ</p>';
+            } else {
+                data.forEach(item => {
+                    const date = new Date(item.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const receivedAt = new Date(item.receivedAt).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                    const deliveredStatus = item.isDelivered ? 'ส่งมอบแล้ว' : 'รอส่งมอบ';
+                    const receivedItemHtml = `
+                        <div class="data-block received-item">
+                            <img src="${item.imageUrl || 'https://placehold.co/100x80/ADD8E6/000000?text=Waste+Pic'}" alt="Waste Image" class="data-item-image">
+                            <div class="data-item-details">
+                                <p><strong>เมนู:</strong> ${item.menu}</p>
+                                <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
+                                <p><strong>วันที่โพสต์:</strong> ${date}</p>
+                                <p><strong>จากโรงเรียน:</strong> ${item.school ? item.school.instituteName : 'ไม่ระบุโรงเรียน'}</p>
+                                <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
+                                <p><strong>สถานะส่งมอบ:</strong> <span class="${item.isDelivered ? 'status-delivered' : 'status-pending'}">${deliveredStatus}</span></p>
+                            </div>
+                            ${!item.isDelivered ? `
+                                <button class="show-qr-button" data-id="${item._id}">แสดง QR Code</button>
+                            ` : ''}
+                        </div>
+                    `;
+                    receivedWasteBlocksWrapper.insertAdjacentHTML('beforeend', receivedItemHtml);
+                });
+                // Attach Show QR button listeners after content is rendered
+                receivedWasteBlocksWrapper.querySelectorAll('.show-qr-button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const wasteId = e.target.dataset.id;
+                        loadQRCodeDisplayPage(wasteId);
+                    });
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load received waste data:', error);
+        document.querySelector('#receivedWasteBlocks').innerHTML = '<p style="color: red; text-align: center;">ไม่สามารถโหลดข้อมูลรายการที่รับแล้วได้</p>';
+    }
+}
+
+
+// NEW: Load QR Code Display Page Function
+function loadQRCodeDisplayPage(wasteId) {
+    loadContent(getQRCodeDisplayHtml(wasteId));
+}
+
+// Function to handle "Other" option in dropdown
+function toggleOtherPurposeInput() {
+    const purposeSelect = document.getElementById('purposeSelect');
+    const otherPurposeInput = document.getElementById('otherPurposeInput');
+    const otherPurposeTextarea = document.getElementById('otherPurpose');
+
+    if (purposeSelect.value === 'other') {
+        otherPurposeInput.style.display = 'block';
+        otherPurposeTextarea.setAttribute('required', 'true');
+    } else {
+        otherPurposeInput.style.display = 'none';
+        otherPurposeTextarea.removeAttribute('required');
+        otherPurposeTextarea.value = '';
+    }
 }
 
-.scan-qr-button:hover {
-    background-color: #e66a00;
-}
+// Function to handle "Other" option in Edit Profile dropdown
+function toggleEditOtherPurposeInput() {
+    const purposeSelect = document.getElementById('editPurposeSelect');
+    const otherPurposeInput = document.getElementById('editOtherPurposeInput');
+    const otherPurposeTextarea = document.getElementById('editOtherPurpose');
 
-.show-qr-button { /* for farmer */
-    background-color: #6f42c1; /* Purple */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-    margin-left: 10px; /* Space from details */
-}
-.show-qr-button:hover {
-    background-color: #5d35a6;
+    if (purposeSelect.value === 'other') {
+        otherPurposeInput.style.display = 'block';
+        otherPurposeTextarea.setAttribute('required', 'true');
+    } else {
+        otherPurposeInput.style.display = 'none';
+        otherPurposeTextarea.removeAttribute('required');
+        otherPurposeTextarea.value = '';
+    }
 }
 
-
-/* Footer Contact Email */
-.footer {
-    background-color: var(--footer-bg);
-    color: var(--light-text);
-    text-align: center;
-    padding: 15px 0;
-    font-size: 0.85em;
-    width: 100%;
-    position: relative; /* Ensure z-index works */
-    z-index: 50; /* Bring footer above potential overlays */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
 
-.footer .contact-email a {
-    color: var(--light-text);
-    text-decoration: none;
+// Function to load the main page and attach event listeners
+function loadMainPage() {
+    // Clear token and role on returning to main page (effectively logging out)
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+    loadContent(getMainPageHtml());
 }
-.footer .contact-email a:hover {
-    text-decoration: underline;
-}
-
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .main-question-text {
-        font-size: 1.5em;
-        margin-bottom: 30px;
-    }
-    .cards-and-descriptions-wrapper {
-        flex-direction: column; /* Stack cards vertically on smaller screens */
-        gap: 30px;
-    }
-    .card-with-description {
-        max-width: 90%; /* Make cards wider on smaller screens */
-    }
-    .card-image {
-        height: 250px;
-    }
-    .button {
-        font-size: 1.1em;
-        padding: 12px 25px;
-    }
-    .card-description-text {
-        font-size: 0.85em;
-    }
-
-    /* School Dashboard Responsive */
-    .school-dashboard-container {
-        padding: 10px;
-        height: auto;
-    }
-    .dashboard-content-area {
-        flex-direction: column;
-        height: auto;
-    }
-    .sidebar {
-        width: 100%;
-        border-radius: 15px 15px 0 0;
-        padding: 15px;
-    }
-    .main-display-area {
-        padding: 15px;
-    }
-    .dashboard-buttons {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .add-data-button,
-    .dashboard-buttons .back-button,
-    .analysis-button,
-    .edit-profile-button,
-    .knowledge-button,
-    .pending-delivery-button,
-    .received-waste-button-list {
-        max-width: 100%;
-    }
-
-    /* Add Waste Data Page Responsive */
-    .add-waste-container {
-        padding: 10px;
-    }
-    .add-waste-container h2 {
-        font-size: 1.8em;
-    }
-    .form-row {
-        flex-direction: column;
-        gap: 20px;
-        align-items: center;
-    }
-    .upload-group {
-        width: 100%;
-        max-width: 300px;
-        height: 200px;
-    }
-    .form-fields-group {
-        width: 100%;
-        max-width: none;
-    }
-    .form-buttons {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .add-waste-container .back-button,
-    .add-waste-container .login-button {
-        max-width: 100%;
-    }
-
-    /* Farmer Dashboard Responsive */
-    .farmer-dashboard-container {
-        padding: 10px;
-        height: auto;
-    }
-    .farmer-dashboard-container .dashboard-content-area {
-        flex-direction: column;
-        height: auto;
-    }
-    .farmer-dashboard-container .sidebar {
-        width: 100%;
-        border-radius: 15px 15px 0 0;
-        padding: 15px;
-    }
-    .farmer-dashboard-container .main-display-area {
-        padding: 15px;
-    }
-    .filter-group input {
-        width: calc(100% - 20px);
-    }
-    .filter-weight-inputs input {
-        width: auto;
-    }
-    .filter-button {
-        width: 100%;
-    }
-
-    /* Post Details Page Responsive */
-    .post-details-container {
-        padding: 20px;
-    }
-    .post-details-container h2 {
-        font-size: 1.8em;
-    }
-    .details-content {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
-    .details-image {
-        width: 100%;
-        max-width: 300px;
-        height: auto;
-    }
-    .details-fields-group {
-        width: 100%;
-        max-width: none;
-        text-align: center;
-    }
-    .details-fields-group p {
-        font-size: 1em;
-    }
-
-    /* Modal Responsive */
-    .custom-modal-content {
-        padding: 20px;
-    }
-    .modal-buttons {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .modal-button {
-        width: 100%;
-    }
-
-    /* Analysis Page Responsive */
-    .analysis-container {
-        padding: 15px;
-    }
-    .analysis-container h2 {
-        font-size: 1.8em;
-    }
-    .chart-container {
-        height: 300px;
-    }
-
-    /* Edit Profile Page Responsive */
-    .edit-profile-container {
-        padding: 15px;
-    }
-    .edit-profile-container h2 {
-        font-size: 1.8em;
-    }
-
-    /* Knowledge Page Responsive */
-    .knowledge-container {
-        padding: 15px;
-    }
-    .knowledge-container h2 {
-        font-size: 1.8em;
-    }
-    .knowledge-content {
-        padding: 15px;
-    }
-    .knowledge-content h3 {
-        font-size: 1.3em;
-    }
-    .knowledge-content p, .knowledge-content li {
-        font-size: 0.9em;
-    }
 
-    /* Pending/Received List Responsive */
-    .pending-delivery-container, .received-waste-container {
-        padding: 10px;
-    }
-    .pending-delivery-container h2, .received-waste-container h2 {
-        font-size: 1.8em;
-    }
-    .pending-list-area, .received-list-area {
-        padding: 15px;
-    }
-    .data-block.pending-item, .data-block.received-item {
-        flex-direction: column;
-        text-align: center;
-    }
-    .data-block.pending-item .data-item-image, .data-block.received-item .data-item-image {
-        margin-bottom: 10px;
-    }
-    .data-block.pending-item .scan-qr-button,
-    .data-block.received-item .show-qr-button {
-        margin-top: 10px;
-        margin-left: 0;
-        width: 100%;
-    }
+// Function to load generic login page
+function loadGenericLoginPage() {
+    loadContent(getGenericLoginPageHtml());
 }
-
-@media (max-width: 480px) {
-    .main-question-text {
-        font-size: 1.2em;
-        margin-bottom: 20px;
-    }
-    .card-image {
-        height: 200px;
-    }
-    .button {
-        font-size: 1em;
-        padding: 10px 20px;
-    }
-    .card-description-text {
-        font-size: 0.8em;
-    }
-
-    /* School Dashboard Responsive */
-    /* Farmer Dashboard Responsive */
-    .farmer-dashboard-container .sidebar h3 {
-        font-size: 1.3em;
-    }
-    .data-block {
-        flex-direction: column;
-        text-align: center;
-    }
-    .data-item-image {
-        margin-bottom: 10px;
-    }
 
-    /* Add Waste Data Page Responsive */
-    .add-waste-container h2 {
-        font-size: 1.5em;
+// Initial page load and setup
+document.addEventListener('DOMContentLoaded', () => {
+    // Ensure the main app container is ready
+    const appContainer = document.getElementById('app-container');
+    if (!appContainer) {
+        console.error("Error: #app-container not found. Check index.html.");
+        return;
     }
-    .upload-button-label {
-        font-size: 1em;
-    }
-
-    /* Post Details Page Responsive */
-    .post-details-container h2 {
-        font-size: 1.5em;
-    }
-    .details-fields-group p {
-        font-size: 0.9em;
-    }
 
-    /* Analysis Page Responsive */
-    .analysis-container h2 {
-        font-size: 1.5em;
+    // Attach event listener for the sign-in link
+    const signInLink = document.getElementById('signInLink');
+    if (signInLink) {
+        signInLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            loadGenericLoginPage();
+        });
+    } else {
+        // This warning will appear in the console if the element is not found.
+        console.warn("Warning: #signInLink not found. The sign-in button may not be functional.");
     }
-    .chart-container {
-        height: 250px;
-    }
-
-    /* Edit Profile Page Responsive */
-    .edit-profile-container h2 {
-        font-size: 1.5em;
-    }
 
-    /* Knowledge Page Responsive */
-    .knowledge-container h2 {
-        font-size: 1.5em;
+    // Check if user is already logged in based on token/role
+    const userRole = localStorage.getItem('userRole');
+    if (userRole === 'school') {
+        loadSchoolDashboard();
+    } else if (userRole === 'farmer') {
+        loadFarmerDashboard();
+    } else {
+        loadMainPage(); // Default to main page if not logged in
     }
-}
+});
