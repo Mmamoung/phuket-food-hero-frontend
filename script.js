@@ -132,7 +132,7 @@ async function renderDataBlocks(data, targetWrapperId) {
 
     wrapper.innerHTML = ''; // Clear previous content
 
-    console.log(`Rendering data blocks for ${targetWrapperId}. Data received:`, data); // Log data received
+    console.log(`Rendering data blocks for ${targetWrapperId}. Data received COUNT:`, data.length, "Data:", data); // Log data received count and data
 
     if (data.length === 0) {
         wrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่พบข้อมูล</p>';
@@ -178,7 +178,7 @@ async function renderDataBlocks(data, targetWrapperId) {
             <img src="${item.imageUrl || 'https://placehold.co/150x120/ADD8E6/000000?text=No+Image'}" alt="Waste Image" class="data-item-image">
             <div class="data-item-details">
                 <p><strong>เมนู:</strong> ${item.menu}</p>
-                <p><strong>ปริมาณ:</b> ${item.weight} kg</p>
+                <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
                 <p><strong>วันที่:</strong> ${date} (${postedAt})</p>
                 <p><strong>จาก:</strong> ${item.school ? item.school.instituteName : 'ไม่ระบุโรงเรียน'}</p>
                 <p><strong>ติดต่อ:</strong> ${item.school ? item.school.contactNumber : 'ไม่ระบุ'}</p>
