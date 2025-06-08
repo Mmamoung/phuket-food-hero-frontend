@@ -54,6 +54,8 @@ body {
     text-decoration: none;
     color: var(--dark-text);
     font-weight: bold;
+    position: relative; /* Ensure z-index works */
+    z-index: 100; /* Bring sign-in button to front */
 }
 
 .hero-section {
@@ -82,6 +84,7 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     position: relative;
+    z-index: 0; /* Ensure content-section is behind its children with z-index 2+ */
 }
 
 /* Add overlay to make text and buttons stand out */
@@ -93,7 +96,7 @@ body {
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.6); /* Increased opacity for better white text readability */
-    z-index: 1;
+    z-index: 1; /* Overlay is above content-section but below loaded HTML */
 }
 
 /* Styles for the main page content layout */
@@ -103,7 +106,8 @@ body {
     align-items: center;
     width: 100%;
     max-width: 1000px; /* Limit overall width for better layout */
-    z-index: 2; /* Ensure it's above the overlay */
+    position: relative; /* Ensure z-index works */
+    z-index: 2; /* Main page content above overlay */
 }
 
 .main-question-text {
@@ -187,7 +191,8 @@ body {
     width: 100%;
     max-width: 500px;
     text-align: center;
-    z-index: 2;
+    position: relative; /* Ensure z-index works */
+    z-index: 2; /* Login form above overlay */
 }
 
 .login-container h2 {
@@ -311,6 +316,8 @@ body {
     box-shadow: var(--card-shadow);
     overflow: hidden; /* Hide scrollbars if content overflows */
     margin-bottom: 20px; /* Space between content and buttons */
+    position: relative; /* For z-index to work correctly inside */
+    z-index: 3; /* Ensure content is above lower z-index elements */
 }
 
 .sidebar {
@@ -324,12 +331,16 @@ body {
     align-items: center;
     border-top-left-radius: 15px;
     border-bottom-left-radius: 15px;
+    position: relative; /* Ensure z-index works for sidebar content */
+    z-index: 4; /* Sidebar above main content area */
 }
 
 .main-display-area {
     flex-grow: 1; /* Take remaining space */
     padding: 20px;
     overflow-y: auto; /* Enable vertical scrolling if content overflows */
+    position: relative; /* Ensure z-index works for main area content */
+    z-index: 3; /* Main display area above lower z-index elements */
 }
 
 .data-block-wrapper {
@@ -348,6 +359,7 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     width: 100%; /* Ensure it takes full width in the column layout */
     position: relative; /* For positioning details/delete button */
+    z-index: 5; /* Ensure data blocks are on top of everything within main-display-area */
 }
 
 .data-item-image {
@@ -382,6 +394,8 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
     white-space: nowrap; /* Prevent text wrapping */
+    position: relative; /* Ensure it's clickable */
+    z-index: 6; /* Ensure buttons are above other content within data-block */
 }
 
 .details-button:hover {
@@ -400,6 +414,8 @@ body {
     transition: background-color 0.3s ease;
     white-space: nowrap;
     margin-left: 10px; /* Space from details */
+    position: relative; /* Ensure it's clickable */
+    z-index: 6;
 }
 
 .delete-button:hover {
@@ -418,6 +434,8 @@ body {
     transition: background-color 0.3s ease;
     white-space: nowrap;
     margin-right: 10px; /* Space from details */
+    position: relative; /* Ensure it's clickable */
+    z-index: 6;
 }
 
 .receive-waste-button:hover {
@@ -431,6 +449,8 @@ body {
     color: #28a745; /* Green */
     white-space: nowrap;
     margin-right: 10px;
+    position: relative; /* Ensure it's visible */
+    z-index: 6;
 }
 
 
