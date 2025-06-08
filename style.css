@@ -165,6 +165,10 @@ body {
     margin-top: 20px; /* Space between image and button */
 }
 
+.button:hover {
+    background-color: #0056b3;
+}
+
 .card-description-text {
     color: var(--light-text); /* White color for description text */
     font-size: 0.95em; /* Adjust size as needed */
@@ -670,7 +674,10 @@ body {
 .add-waste-container input[type="number"],
 .add-waste-container input[type="date"] {
     background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
     color: var(--dark-text);
 }
 
@@ -694,118 +701,25 @@ body {
 }
 
 
-/* Styles for Farmer Dashboard */
-.farmer-dashboard-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 1200px;
-    height: 80vh;
-    background-color: transparent;
-    z-index: 2;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.farmer-dashboard-container .dashboard-content-area {
-    /* ใช้สไตล์ร่วมกับ .dashboard-content-area ทั่วไป */
-}
-
-.farmer-dashboard-container .sidebar {
-    /* ใช้สไตล์ร่วมกับ .sidebar ทั่วไป */
-}
-
-.sidebar h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 1.5em;
-    font-weight: 700;
-}
-
-/* User Stars display */
-.user-stars {
-    color: #00FF00; /* Green color for stars */
-    font-size: 1.2em;
-    font-weight: 700;
-    margin-bottom: 20px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
-
-
-.filter-group {
-    width: 100%;
-    margin-bottom: 15px;
-}
-
-.filter-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 0.95em;
-    font-weight: 600;
-    color: var(--light-text);
-}
-
-.filter-group input[type="text"],
-.filter-group input[type="number"],
-.filter-group input[type="date"] {
-    width: calc(100% - 20px);
-    padding: 8px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 5px;
-    background-color: rgba(255, 255, 255, 0.8);
-    color: var(--dark-text);
-    font-size: 0.9em;
-    box-sizing: border-box;
-}
-
-.filter-weight-inputs {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-}
-
-.filter-weight-inputs input {
-    flex-grow: 1;
-    width: auto;
-}
-
-.filter-weight-inputs span {
-    color: var(--light-text);
-}
-
-.filter-button {
-    background-color: var(--primary-blue);
-    color: var(--light-text);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 15px;
-    width: 100%;
-}
-
-.filter-button:hover {
-    background-color: #0056b3;
-}
-
-/* Styles for Post Details Page */
-.post-details-container {
-    background-color: rgba(255, 255, 255, 0.1);
+/* Pending Delivery Page Styles */
+.pending-delivery-container,
+.received-waste-container,
+.qr-code-container {
+    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
-    max-width: 800px;
+    max-width: 1000px;
     z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.post-details-container h2 {
+.pending-delivery-container h2,
+.received-waste-container h2,
+.qr-code-container h2 {
     color: var(--light-text);
     margin-bottom: 30px;
     font-size: 2.2em;
@@ -814,250 +728,101 @@ body {
     text-align: center;
 }
 
-.details-content {
-    display: flex;
+.pending-list-area,
+.received-list-area {
     width: 100%;
-    gap: 30px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.details-image {
-    width: 300px;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 15px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    flex-shrink: 0;
-}
-
-.details-fields-group {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 400px;
-}
-
-.details-fields-group p {
-    color: var(--light-text);
-    font-size: 1.1em;
-    margin: 0;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
-}
-
-.details-fields-group strong {
-    font-weight: 700;
-    color: var(--light-text);
-}
-
-/* Custom Confirmation Modal Styles */
-.custom-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000; /* Ensure it's on top */
-}
-
-.custom-modal-content {
-    background-color: var(--header-bg);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    max-width: 400px;
-    width: 90%;
-    color: var(--dark-text);
-}
-
-.custom-modal-content p {
-    margin-bottom: 25px;
-    font-size: 1.1em;
-    font-weight: 500;
-}
-
-.modal-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.modal-button {
-    padding: 10px 25px;
-    border: none;
-    border-radius: 20px;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.modal-button-yes {
-    background-color: #dc3545; /* Red for Yes */
-    color: var(--light-text);
-}
-
-.modal-button-yes:hover {
-    background-color: #c82333;
-}
-
-.modal-button-no {
-    background-color: #6c757d; /* Grey for No */
-    color: var(--light-text);
-}
-
-.modal-button-no:hover {
-    background-color: #5a6268;
-}
-
-/* Analysis Page Styles */
-.analysis-container {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 900px; /* Adjust max width for analysis page */
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.analysis-container h2 {
-    color: var(--light-text);
-    margin-bottom: 30px;
-    font-size: 2.2em;
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    text-align: center;
-}
-
-.chart-container {
-    background-color: var(--header-bg); /* White background for chart area */
-    border-radius: 10px;
-    padding: 20px;
-    width: 100%;
-    height: 400px; /* Fixed height for chart */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: flex; /* Use flex to center content if no chart */
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-
-/* Edit Profile Page Styles */
-.edit-profile-container {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 600px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.edit-profile-container h2 {
-    color: var(--light-text);
-    margin-bottom: 30px;
-    font-size: 2.2em;
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    text-align: center;
-}
-
-.edit-profile-container form {
-    width: 100%;
-}
-
-.edit-profile-container .form-group label {
-    color: var(--light-text);
-}
-
-.edit-profile-container input[type="text"],
-.edit-profile-container input[type="tel"],
-.edit-profile-container input[type="email"],
-.edit-profile-container input[type="password"],
-.edit-profile-container select,
-.edit-profile-container textarea {
-    background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    color: var(--dark-text);
-}
-
-/* Knowledge Page Styles */
-.knowledge-container {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 900px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.knowledge-container h2 {
-    color: var(--light-text);
-    margin-bottom: 20px;
-    font-size: 2.2em;
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    text-align: center;
-}
-
-.knowledge-content {
-    background-color: var(--header-bg);
-    border-radius: 10px;
-    padding: 25px;
-    width: 100%;
-    max-height: 50vh; /* Limit height and allow scrolling */
+    max-height: 60vh; /* Allow scrolling for lists */
     overflow-y: auto;
+    background-color: var(--header-bg);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* QR Code Display Styles */
+.qr-code-container .qr-code-box {
+    background-color: var(--header-bg);
+    padding: 20px;
+    border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    text-align: center;
+    width: fit-content; /* Adjust width to content */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.qr-code-container .qr-code-text {
+    font-size: 1.2em;
+    font-weight: bold;
     color: var(--dark-text);
-    text-align: left;
-    line-height: 1.6;
-}
-
-.knowledge-content h3 {
-    font-size: 1.5em;
-    margin-top: 15px;
-    margin-bottom: 10px;
-    color: var(--primary-blue);
-}
-
-.knowledge-content ul, .knowledge-content ol {
-    margin-left: 20px;
     margin-bottom: 15px;
 }
-
-.knowledge-content li {
-    margin-bottom: 5px;
+.qr-code-container img {
+    border: 1px solid #ccc;
+    padding: 5px;
+    background-color: white;
 }
 
-.knowledge-content a {
-    color: var(--primary-blue);
+/* Specific button for QR Scan (school) */
+.scan-qr-button {
+    background-color: #fd7e14; /* Orange */
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    margin-left: 10px; /* Space from details */
+}
+
+.scan-qr-button:hover {
+    background-color: #e66a00;
+}
+
+.show-qr-button { /* for farmer */
+    background-color: #6f42c1; /* Purple */
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    margin-left: 10px; /* Space from details */
+}
+.show-qr-button:hover {
+    background-color: #5d35a6;
+}
+
+
+/* Footer Contact Email */
+.footer {
+    background-color: var(--footer-bg);
+    color: var(--light-text);
+    text-align: center;
+    padding: 15px 0;
+    font-size: 0.85em;
+    width: 100%;
+    position: relative; /* Ensure z-index works */
+    z-index: 50; /* Bring footer above potential overlays */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.footer .contact-email a {
+    color: var(--light-text);
     text-decoration: none;
 }
-
-.knowledge-content a:hover {
+.footer .contact-email a:hover {
     text-decoration: underline;
 }
-
 
 
 /* Responsive Design */
@@ -1109,7 +874,9 @@ body {
     .dashboard-buttons .back-button,
     .analysis-button,
     .edit-profile-button,
-    .knowledge-button {
+    .knowledge-button,
+    .pending-delivery-button,
+    .received-waste-button-list {
         max-width: 100%;
     }
 
@@ -1303,4 +1070,8 @@ body {
         font-size: 1.5em;
     }
 
-   
+    /* Knowledge Page Responsive */
+    .knowledge-container h2 {
+        font-size: 1.5em;
+    }
+}
