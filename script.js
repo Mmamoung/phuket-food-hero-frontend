@@ -156,7 +156,6 @@ async function renderDataBlocks(data, targetWrapperId) {
         userStarsElement.textContent = `⭐ ${userStars} ดาว`;
     }
 
-
     data.forEach(item => {
         const dataBlock = document.createElement('div');
         dataBlock.classList.add('data-block');
