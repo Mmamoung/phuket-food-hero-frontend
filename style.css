@@ -435,6 +435,8 @@ body {
     justify-content: space-between;
     width: 100%;
     gap: 20px;
+    z-index: 10; /* Bring buttons to front */
+    position: relative; /* Needed for z-index to work */
 }
 
 .add-data-button {
@@ -1301,8 +1303,4 @@ body {
         font-size: 1.5em;
     }
 
-    /* Knowledge Page Responsive */
-    .knowledge-container h2 {
-        font-size: 1.5em;
-    }
-}
+   
