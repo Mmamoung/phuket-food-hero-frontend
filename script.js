@@ -1,126 +1,206 @@
-// --- Helper function for authenticated API calls ---
-async function authenticatedFetch(url, options = {}) {
-    const token = localStorage.getItem('token');
-    const headers = {
-        ...options.headers // รวม headers เดิม
-    };
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+// NEW: Firebase Configuration
+// TODO: PASTE YOUR FIREBASE CONFIG OBJECT HERE FROM FIREBASE CONSOLE
+const firebaseConfig = {
+  apiKey: "AIzaSyCjtbAuyePzeC6TbnbautvwUnxzcyxPvkw",
+  authDomain: "phuket-food-hero-bdf99.firebaseapp.com",
+  projectId: "phuket-food-hero-bdf99",
+  storageBucket: "phuket-food-hero-bdf99.firebasestorage.app",
+  messagingSenderId: "186105687007",
+  appId: "1:186105687007:web:7f4395dfea4e8ac942326a", // แก้ไข App ID
+  measurementId: "G-56SEESNQWF"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+// Helper function to calculate stars (1 star for every 10 actions)
+const calculateStars = (count) => {
+    return Math.floor(count / 10);
+};
+
+// NEW Helper function to remove undefined properties from an object
+function cleanObject(obj) {
+    const newObj = {};
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key) && obj[key] !== undefined) {
+            newObj[key] = obj[key];
+        }
     }
-
-    const response = await fetch(url, { ...options, headers });
-
-    // Handle authentication errors
-    if (response.status === 401 || response.status === 403) {
-        alert('เซสชันหมดอายุหรือไม่มีสิทธิ์ กรุณาเข้าสู่ระบบใหม่');
-        localStorage.removeItem('token');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('userId');
-        loadMainPage(); // Redirect to main page/login
-        throw new Error('Unauthorized or Forbidden'); // Throw error to stop further execution
-    }
-
-    return response;
+    return newObj;
 }
 
-// --- Helper function to handle user login/registration ---
+
+// --- Firebase Authentication Functions ---
 async function handleAuthSubmission(email, password, role, additionalData = {}) {
-    const authData = { email, password, role, ...additionalData };
-    let response;
-    let result;
+    let currentUser;
+    let userDocRef;
+
+    // Basic frontend validation for password length
+    if (password.length < 6) {
+        alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        return;
+    }
 
     try {
-        // Attempt to register first
-        // TODO: Update to your Render.com Backend URL
-        response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(authData)
-        });
-
-        result = await response.json();
-
-        if (response.ok) {
-            // Registration successful
-            localStorage.setItem('token', result.token);
-            localStorage.setItem('userRole', result.role);
-            localStorage.setItem('userId', result._id);
-            alert('ลงทะเบียนและเข้าสู่ระบบสำเร็จ!');
-            if (result.role === 'school') {
-                loadSchoolDashboard();
-            } else if (result.role === 'farmer') {
-                loadFarmerDashboard();
-            }
-            return; // Exit function
-        } else if (response.status === 400 && result.msg === 'User นี้ลงทะเบียนแล้ว') {
-            // User already registered, attempt to log in
-            console.log('User already registered, attempting login...');
-            // TODO: Update to your Render.com Backend URL
-            response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }) // Only email and password for login
-            });
-            result = await response.json();
-
-            if (response.ok) {
-                // Login successful
-                localStorage.setItem('token', result.token);
-                localStorage.setItem('userRole', result.role);
-                localStorage.setItem('userId', result._id);
-                alert('เข้าสู่ระบบสำเร็จ!');
-                if (result.role === 'school') {
-                    loadSchoolDashboard();
-                } else if (result.role === 'farmer') {
-                    loadFarmerDashboard();
-                }
-                return; // Exit function
-            } else {
-                // Login failed after registration attempt
-                alert('เข้าสู่ระบบล้มเหลว: ' + (result.msg || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'));
-            }
-        } else {
-            // Other registration error
-            alert('ลงทะเบียนไม่สำเร็จ: ' + (result.msg || 'เกิดข้อผิดพลาด'));
+        // Try to create user first in Firebase Authentication
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        currentUser = userCredential.user;
+        
+        // --- IMPORTANT: Robust check for currentUser and UID ---
+        if (!currentUser || !currentUser.uid) {
+            console.error("Auth Error: currentUser or UID is undefined after createUserWithEmailAndPassword.");
+            alert('ลงทะเบียนไม่สำเร็จ: ผู้ใช้ไม่ได้ถูกสร้างอย่างถูกต้อง (UID หายไป)');
+            await auth.signOut();
+            loadMainPage();
+            return;
         }
+        console.log("Firebase Auth: User created with UID:", currentUser.uid);
+        // --- END IMPORTANT CHECK ---
+        
+        // Save user data to Firestore
+        // --- NEW: Wrap Firestore document creation in its own try-catch ---
+        try {
+            userDocRef = db.collection('users').doc(currentUser.uid);
+            
+            // Clean additionalData to remove undefined fields before setting
+            const dataToSet = cleanObject({
+                email: email,
+                role: role,
+                wastePostsCount: 0,
+                wasteReceivedCount: 0,
+                stars: 0,
+                ...additionalData // Add role-specific data
+            });
+
+            await userDocRef.set(dataToSet); // Use the cleaned data
+            console.log("Firestore: User document created for UID:", currentUser.uid);
+            alert('ลงทะเบียนและเข้าสู่ระบบสำเร็จ!');
+        } catch (firestoreError) {
+            console.error("Firestore Error during user document creation:", firestoreError);
+            alert('ลงทะเบียนไม่สำเร็จ: ไม่สามารถบันทึกข้อมูลโปรไฟล์ (อาจเกิดจากกฎความปลอดภัยหรือปัญหาฐานข้อมูล): ' + firestoreError.message);
+            // Optional: Delete user from Auth if Firestore document creation fails
+            if (auth.currentUser) { // Ensure user is still logged in to delete
+                await auth.currentUser.delete();
+            }
+            await auth.signOut();
+            loadMainPage();
+            return;
+        }
+        // --- END NEW Firestore try-catch ---
 
     } catch (error) {
-        console.error('Authentication Error:', error);
-        if (error.message !== 'Unauthorized or Forbidden') {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+        if (error.code === 'auth/email-already-in-use') {
+            console.log('User already registered in Firebase Auth, attempting login...');
+            try {
+                // If email already in use, try to sign in
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                currentUser = userCredential.user;
+                
+                // --- NEW: Robust check for currentUser and UID after sign-in ---
+                if (!currentUser || !currentUser.uid) {
+                    console.error("Auth Error: currentUser or UID is undefined after signInWithEmailAndPassword.");
+                    alert('เข้าสู่ระบบล้มเหลว: ไม่สามารถระบุผู้ใช้ได้');
+                    await auth.signOut();
+                    loadMainPage();
+                    return;
+                }
+                console.log("Firebase Auth: User signed in with existing account. UID:", currentUser.uid);
+                // --- END NEW CHECK ---
+                
+                alert('เข้าสู่ระบบสำเร็จ!');
+            } catch (loginError) {
+                alert('เข้าสู่ระบบล้มเหลว: ' + (loginError.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'));
+                console.error('Login Error during re-attempt:', loginError);
+                return;
+            }
+        } else {
+            alert('ลงทะเบียนไม่สำเร็จ: ' + (error.message || 'เกิดข้อผิดพลาด'));
+            console.error('Registration Error:', error);
+            return;
         }
+    }
+
+    if (currentUser && currentUser.uid) { // Ensure currentUser and its uid are available
+        console.log("Attempting to fetch user document from Firestore for UID:", currentUser.uid);
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        
+        if (userDoc.exists) {
+            console.log("Firestore: User document found.");
+            const userDataFromFirestore = userDoc.data();
+            localStorage.setItem('userRole', userDataFromFirestore.role); // Ensure correct role
+            localStorage.setItem('userId', currentUser.uid); // Store UID for future reference
+            localStorage.setItem('userStars', userDataFromFirestore.stars || 0); // Store stars
+
+            // Navigate based on actual role from Firestore
+            if (userDataFromFirestore.role === 'school') {
+                loadSchoolDashboard();
+            } else if (userDataFromFirestore.role === 'farmer') {
+                loadFarmerDashboard();
+            }
+        } else {
+            console.error("Firestore Error: User document NOT found for UID:", currentUser.uid, ". This user exists in Auth but not Firestore. Automatic logout initiated.");
+            alert('ไม่พบข้อมูลโปรไฟล์ผู้ใช้ กรุณาลงทะเบียนใหม่');
+            await auth.signOut(); // Log out if profile not found
+            loadMainPage(); // Fallback
+        }
+    } else {
+        console.error("handleAuthSubmission final check: currentUser or currentUser.uid is missing after all attempts.");
+        alert("เกิดข้อผิดพลาดภายในระบบ: ไม่สามารถยืนยันผู้ใช้ได้");
+        loadMainPage(); // Fallback if current user somehow becomes invalid
     }
 }
 
-// --- Helper function for generic login attempt ---
 async function genericLoginAttempt(email, password) {
+    // Basic frontend validation for password length
+    if (password.length < 6) {
+        alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        return;
+    }
     try {
-        // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-        const result = await response.json();
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const currentUser = userCredential.user;
+        
+        // --- IMPORTANT: Robust check for currentUser and UID ---
+        if (!currentUser || !currentUser.uid) {
+            console.error("Auth Error: currentUser or UID is undefined after signInWithEmailAndPassword (generic).");
+            alert('เข้าสู่ระบบล้มเหลว: ไม่สามารถระบุผู้ใช้ได้');
+            await auth.signOut();
+            loadMainPage();
+            return;
+        }
+        console.log("Firebase Auth: Generic login successful. UID:", currentUser.uid);
+        // --- END IMPORTANT CHECK ---
 
-        if (response.ok) {
-            localStorage.setItem('token', result.token);
-            localStorage.setItem('userRole', result.role);
-            localStorage.setItem('userId', result._id);
+        localStorage.setItem('userId', currentUser.uid); // Store UID for future reference
+
+        console.log("Attempting to fetch user document from Firestore for UID:", currentUser.uid);
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        
+        if (userDoc.exists) {
+            console.log("Firestore: User document found during generic login.");
+            const userDataFromFirestore = userDoc.data();
+            localStorage.setItem('userRole', userDataFromFirestore.role);
+            localStorage.setItem('userStars', userDataFromFirestore.stars || 0);
+
             alert('เข้าสู่ระบบสำเร็จ!');
-            if (result.role === 'school') {
+            if (userDataFromFirestore.role === 'school') {
                 loadSchoolDashboard();
-            } else if (result.role === 'farmer') {
+            } else if (userDataFromFirestore.role === 'farmer') {
                 loadFarmerDashboard();
             }
         } else {
-            alert('เข้าสู่ระบบล้มเหลว: ' + (result.msg || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'));
+            console.error("Firestore Error: User document NOT found for UID:", currentUser.uid, ". This user exists in Auth but not Firestore. Automatic logout initiated.");
+            alert('ไม่พบข้อมูลโปรไฟล์ผู้ใช้ กรุณาลงทะเบียนใหม่');
+            await auth.signOut(); // Log out if profile not found
+            loadMainPage();
         }
+
     } catch (error) {
+        alert('เข้าสู่ระบบล้มเหลว: ' + (error.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'));
         console.error('Generic Login Error:', error);
-        if (error.message !== 'Unauthorized or Forbidden') {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
-        }
     }
 }
 
@@ -130,7 +210,9 @@ async function renderDataBlocks(data, targetWrapperId) {
     const wrapper = document.querySelector(targetWrapperId);
     if (!wrapper) return;
 
-    wrapper.innerHTML = '';
+    wrapper.innerHTML = ''; // Clear previous content
+
+    console.log(`Rendering data blocks for ${targetWrapperId}. Data received COUNT:`, data.length, "Data:", data); // Log data received count and data
 
     if (data.length === 0) {
         wrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่พบข้อมูล</p>';
@@ -143,10 +225,12 @@ async function renderDataBlocks(data, targetWrapperId) {
     // Fetch user's stars for display
     let userStars = 0;
     try {
-        // TODO: Update to your Render.com Backend URL and create this API in Backend (routes/auth.js)
-        const profileResponse = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/auth/profile/${userId}`);
-        const profileData = await profileResponse.json();
-        userStars = profileData.stars || 0;
+        // Fetch current user's data from Firestore to get updated stars
+        const userDoc = await db.collection('users').doc(userId).get();
+        if(userDoc.exists) {
+            userStars = userDoc.data().stars || 0;
+            localStorage.setItem('userStars', userStars); // Update local storage
+        }
     } catch (error) {
         console.error('Failed to fetch user stars:', error);
     }
@@ -160,17 +244,23 @@ async function renderDataBlocks(data, targetWrapperId) {
     data.forEach(item => {
         const dataBlock = document.createElement('div');
         dataBlock.classList.add('data-block');
-        dataBlock.dataset.id = item._id;
+        dataBlock.dataset.id = item.id; // Use .id for Firestore document ID
 
         // Format date
-        const date = new Date(item.date).toLocaleDateString('th-TH', {
+        const date = item.date ? new Date(item.date.toDate()).toLocaleDateString('th-TH', { // Convert Firestore Timestamp to Date
             year: 'numeric', month: 'long', day: 'numeric'
-        });
+        }) : 'ไม่ระบุ';
 
-        // Format posted time
-        const postedAt = new Date(item.postedAt).toLocaleTimeString('th-TH', {
+        // Format postedAt (if available and is Timestamp)
+        const postedAt = item.postedAt ? new Date(item.postedAt.toDate()).toLocaleTimeString('th-TH', {
             hour: '2-digit', minute: '2-digit'
-        });
+        }) : 'ไม่ระบุ';
+
+        // Get school info (populated manually from user data)
+        const schoolName = item.schoolInfo ? item.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน';
+        const schoolContact = item.schoolInfo ? item.schoolInfo.contactNumber : 'ไม่ระบุ';
+        const schoolEmail = item.schoolInfo ? item.schoolInfo.email : 'ไม่ระบุ';
+
 
         dataBlock.innerHTML = `
             <img src="${item.imageUrl || 'https://placehold.co/150x120/ADD8E6/000000?text=No+Image'}" alt="Waste Image" class="data-item-image">
@@ -178,17 +268,17 @@ async function renderDataBlocks(data, targetWrapperId) {
                 <p><strong>เมนู:</strong> ${item.menu}</p>
                 <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
                 <p><strong>วันที่:</strong> ${date} (${postedAt})</p>
-                <p><strong>จาก:</strong> ${item.school ? item.school.instituteName : 'ไม่ระบุโรงเรียน'}</p>
-                <p><strong>ติดต่อ:</strong> ${item.school ? item.school.contactNumber : 'ไม่ระบุ'}</p>
+                <p><strong>จาก:</strong> ${schoolName}</p>
+                <p><strong>ติดต่อ:</strong> ${schoolContact}</p>
             </div>
-            ${userRole === 'school' && item.school && item.school._id === userId ? `<button class="delete-button" data-id="${item._id}">ลบ</button>` : ''}
+            ${userRole === 'school' && item.schoolId === userId && !item.isDelivered ? `<button class="delete-button" data-id="${item.id}">ลบ</button>` : ''}
             ${userRole === 'farmer' && !item.isReceived ? `
-                <button class="receive-waste-button" data-id="${item._id}">รับเศษอาหาร</button>
-                <button class="details-button" data-id="${item._id}">รายละเอียด</button>
+                <button class="receive-waste-button" data-id="${item.id}">รับเศษอาหาร</button>
+                <button class="details-button" data-id="${item.id}">รายละเอียด</button>
                 ` : ''}
             ${userRole === 'farmer' && item.isReceived ? `
                 <p class="received-status">รับแล้วโดยคุณ</p>
-                <button class="details-button" data-id="${item._id}">รายละเอียด</button>
+                <button class="details-button" data-id="${item.id}">รายละเอียด</button>
             `: ''}
         `;
         wrapper.appendChild(dataBlock);
@@ -247,44 +337,93 @@ function showConfirmationModal(message, onConfirm) {
     `;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
 
-    document.getElementById('confirmYes').addEventListener('click', () => {
-        onConfirm();
-        document.getElementById('confirmationModalOverlay').remove();
-    });
-    document.getElementById('confirmNo').addEventListener('click', () => {
-        document.getElementById('confirmationModalOverlay').remove();
-    });
+    // Get the newly added modal elements
+    const confirmYesBtn = document.getElementById('confirmYes');
+    const confirmNoBtn = document.getElementById('confirmNo');
+    const modalOverlay = document.getElementById('confirmationModalOverlay');
+
+    if (confirmYesBtn) {
+        confirmYesBtn.addEventListener('click', () => {
+            onConfirm();
+            if (modalOverlay) modalOverlay.remove();
+        });
+    } else {
+        console.error("confirmYes button not found in modal.");
+    }
+    
+    if (confirmNoBtn) {
+        confirmNoBtn.addEventListener('click', () => {
+            if (modalOverlay) modalOverlay.remove();
+        });
+    } else {
+        console.error("confirmNo button not found in modal.");
+    }
+    
+    if (modalOverlay) {
+        // Optional: Close modal if clicking outside content (but inside overlay)
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                modalOverlay.remove();
+            }
+        });
+    }
 }
+
 
 // --- Delete Waste Entry Function ---
 async function deleteWasteEntry(id) {
     console.log('Frontend attempting to delete ID:', id);
     try {
-        // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/${id}`, {
-            method: 'DELETE'
+        const wasteEntryRef = db.collection('wasteentries').doc(id);
+        const wasteEntryDoc = await wasteEntryRef.get();
+
+        if (!wasteEntryDoc.exists) {
+            alert('ไม่พบข้อมูลเศษอาหารที่จะลบ');
+            return;
+        }
+        const wasteEntryData = wasteEntryDoc.data();
+
+        // Check if the school is the owner
+        const userId = auth.currentUser ? auth.currentUser.uid : null;
+        if (!userId || wasteEntryData.schoolId !== userId) {
+            alert('ไม่ได้รับอนุญาตให้ลบข้อมูลนี้');
+            return;
+        }
+
+        // Delete image from Firebase Storage if exists
+        if (wasteEntryData.imageUrl) {
+            try {
+                const imageRef = storage.refFromURL(wasteEntryData.imageUrl);
+                await imageRef.delete();
+                console.log('Image deleted from Firebase Storage.');
+            } catch (storageError) {
+                console.error('Error deleting image from Firebase Storage:', storageError);
+                // Continue with document deletion even if image deletion fails
+            }
+        }
+
+        await wasteEntryRef.delete();
+
+        // Update school's wastePostsCount and stars
+        const schoolUserRef = db.collection('users').doc(userId);
+        await db.runTransaction(async (transaction) => {
+            const schoolUserDoc = await transaction.get(schoolUserRef);
+            if (schoolUserDoc.exists) {
+                const newWastePostsCount = Math.max(0, (schoolUserDoc.data().wastePostsCount || 0) - 1);
+                const newStars = calculateStars(newWastePostsCount);
+                transaction.update(schoolUserRef, {
+                    wastePostsCount: newWastePostsCount,
+                    stars: newStars
+                });
+                localStorage.setItem('userStars', newStars); // Update local storage
+            }
         });
 
-        const contentType = response.headers.get('content-type');
-        let result;
-        if (contentType && contentType.includes('application/json')) {
-            result = await response.json();
-        } else {
-            result = await response.text();
-            console.error('Backend responded with non-JSON for delete:', result);
-        }
-
-        if (response.ok) {
-            alert('ลบข้อมูลสำเร็จ!');
-            loadSchoolDashboard();
-        } else {
-            alert('ลบข้อมูลไม่สำเร็จ: ' + (result.msg || result || 'เกิดข้อผิดพลาดที่ไม่รู้จัก'));
-        }
+        alert('ลบข้อมูลสำเร็จ!');
+        loadSchoolDashboard();
     } catch (error) {
         console.error('Delete Waste Error:', error);
-        if (error.message !== 'Unauthorized or Forbidden') {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
-        }
+        alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + error.message);
     }
 }
 
@@ -292,23 +431,53 @@ async function deleteWasteEntry(id) {
 async function handleReceiveWaste(wasteId) {
     console.log(`Frontend sending receive request for ID: ${wasteId}`);
     try {
-        // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/receive/${wasteId}`, {
-            method: 'POST'
+        const wasteEntryRef = db.collection('wasteentries').doc(wasteId);
+        const wasteEntryDoc = await wasteEntryRef.get();
+
+        if (!wasteEntryDoc.exists) {
+            alert('ไม่พบข้อมูลเศษอาหารที่จะรับ');
+            return;
+        }
+        const wasteEntryData = wasteEntryDoc.data();
+        if (wasteEntryData.isReceived) {
+            alert('เศษอาหารนี้ถูกรับไปแล้ว');
+            return;
+        }
+
+        const farmerUserId = auth.currentUser ? auth.currentUser.uid : null;
+        if (!farmerUserId) {
+             alert('กรุณาเข้าสู่ระบบในฐานะเกษตรกรเพื่อรับเศษอาหาร');
+             return;
+        }
+
+
+        // Update waste entry as received
+        await wasteEntryRef.update({
+            isReceived: true,
+            receivedBy: farmerUserId,
+            receivedAt: firebase.firestore.FieldValue.serverTimestamp() // Use server timestamp
         });
 
-        if (response.ok) {
-            alert('ยืนยันการรับเศษอาหารสำเร็จ!');
-            loadFarmerDashboard(); // Reload dashboard to reflect changes (e.g., stars)
-        } else {
-            const errorData = await response.json();
-            alert('ยืนยันการรับเศษอาหารไม่สำเร็จ: ' + (errorData.msg || 'เกิดข้อผิดพลาด'));
-        }
+        // Update farmer's wasteReceivedCount and stars
+        const farmerUserRef = db.collection('users').doc(farmerUserId);
+        await db.runTransaction(async (transaction) => {
+            const farmerUserDoc = await transaction.get(farmerUserRef);
+            if (farmerUserDoc.exists) {
+                const newWasteReceivedCount = (farmerUserDoc.data().wasteReceivedCount || 0) + 1;
+                const newStars = calculateStars(newWasteReceivedCount);
+                transaction.update(farmerUserRef, {
+                    wasteReceivedCount: newWasteReceivedCount,
+                    stars: newStars
+                });
+                localStorage.setItem('userStars', newStars); // Update local storage
+            }
+        });
+
+        alert('ยืนยันการรับเศษอาหารสำเร็จ!');
+        loadFarmerDashboard(); // Reload dashboard to reflect changes (e.g., stars)
     } catch (error) {
         console.error('Receive Waste Error:', error);
-        if (error.message !== 'Unauthorized or Forbidden') {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ver');
-        }
+        alert('เกิดข้อผิดพลาดในการรับเศษอาหาร: ' + error.message);
     }
 }
 
@@ -316,23 +485,44 @@ async function handleReceiveWaste(wasteId) {
 async function handleConfirmDelivery(wasteId) {
     console.log(`Frontend sending confirm delivery request for ID: ${wasteId}`);
     try {
-        // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/confirm-delivery/${wasteId}`, {
-            method: 'POST'
+        const wasteEntryRef = db.collection('wasteentries').doc(wasteId);
+        const wasteEntryDoc = await wasteEntryRef.get();
+
+        if (!wasteEntryDoc.exists) {
+            alert('ไม่พบข้อมูลเศษอาหารที่จะยืนยัน');
+            return;
+        }
+        const wasteEntryData = wasteEntryDoc.data();
+
+        // Check if the school is the owner of this waste entry
+        const userId = auth.currentUser ? auth.currentUser.uid : null;
+        if (!userId || wasteEntryData.schoolId !== userId) {
+            alert('คุณไม่ได้รับอนุญาตให้ยืนยันการส่งมอบข้อมูลนี้');
+            return;
+        }
+
+        // Check if it's already delivered
+        if (wasteEntryData.isDelivered) {
+            alert('เศษอาหารนี้ถูกส่งมอบไปแล้ว');
+            return;
+        }
+        // Check if it's even received by a farmer
+        if (!wasteEntryData.isReceived) {
+            alert('เศษอาหารนี้ยังไม่ถูกเกษตรกรรับไป');
+            return;
+        }
+
+        // Mark as delivered
+        await wasteEntryRef.update({
+            isDelivered: true,
+            deliveredAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        if (response.ok) {
-            alert('ยืนยันการส่งมอบเศษอาหารสำเร็จ!');
-            loadPendingDeliveryPage(); // Reload pending delivery list
-        } else {
-            const errorData = await response.json();
-            alert('ยืนยันการส่งมอบไม่สำเร็จ: ' + (errorData.msg || 'เกิดข้อผิดพลาด'));
-        }
+        alert('ยืนยันการส่งมอบเศษอาหารสำเร็จ!');
+        loadPendingDeliveryPage(); // Reload pending delivery list
     } catch (error) {
         console.error('Confirm Delivery Error:', error);
-        if (error.message !== 'Unauthorized or Forbidden') {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
-        }
+        alert('เกิดข้อผิดพลาดในการยืนยันการส่งมอบ: ' + error.message);
     }
 }
 
@@ -340,8 +530,11 @@ async function handleConfirmDelivery(wasteId) {
 function loadContent(contentHtml) {
     const appContainer = document.getElementById('app-container');
     appContainer.innerHTML = contentHtml;
+    console.log("loadContent called. HTML loaded into app-container.");
 
-    // --- Common Event Listeners ---
+    // --- Common Event Listeners (attached after content is loaded) ---
+    // These listeners are attached every time contentHtml is loaded,
+    // ensuring they always work for newly rendered elements.
     if (document.getElementById('backToMain')) {
         document.getElementById('backToMain').addEventListener('click', loadMainPage);
     }
@@ -397,11 +590,16 @@ function loadContent(contentHtml) {
     if (document.getElementById('purposeSelect')) {
         document.getElementById('purposeSelect').addEventListener('change', toggleOtherPurposeInput);
     }
+    if (document.getElementById('editPurposeSelect')) { // For edit profile page
+        document.getElementById('editPurposeSelect').addEventListener('change', toggleEditOtherPurposeInput);
+    }
 
     if (document.getElementById('schoolButton')) {
+        console.log("Attaching listener to schoolButton"); // Added log
         document.getElementById('schoolButton').addEventListener('click', () => loadContent(getSchoolLoginPageHtml()));
     }
     if (document.getElementById('farmerButton')) {
+        console.log("Attaching listener to farmerButton"); // Added log
         document.getElementById('farmerButton').addEventListener('click', () => loadContent(getFarmerLoginPageHtml()));
     }
 
@@ -432,22 +630,24 @@ function loadContent(contentHtml) {
             const purpose = formData.get('purpose');
             const otherPurpose = formData.get('otherPurpose');
 
+            // --- IMPORTANT FIX: Filter out undefined otherPurpose before sending ---
+            const additionalData = {
+                name: formData.get('name'),
+                contactNumber: formData.get('contactNumber'),
+                purpose: purpose,
+                ...(purpose === 'other' && otherPurpose.trim() !== '' ? { otherPurpose: otherPurpose } : {}) // Only add otherPurpose if 'other' is selected and it has a value
+            };
+            // --- END IMPORTANT FIX ---
+
             if (purpose === 'other' && !otherPurpose.trim()) {
                 alert('กรุณาระบุความต้องการอื่นๆ');
                 return;
             }
 
-            const additionalData = {
-                name: formData.get('name'),
-                contactNumber: formData.get('contactNumber'),
-                purpose: purpose,
-                otherPurpose: purpose === 'other' ? otherPurpose : undefined
-            };
             await handleAuthSubmission(email, password, 'farmer', additionalData);
         });
     }
 
-    // --- Generic Login Form Submission ---
     const genericLoginForm = document.getElementById('genericLoginForm');
     if (genericLoginForm) {
         genericLoginForm.addEventListener('submit', async (e) => {
@@ -459,33 +659,64 @@ function loadContent(contentHtml) {
         });
     }
 
-
-    // --- Add Waste Data Form ---
     const addWasteForm = document.getElementById('addWasteForm');
     if (addWasteForm) {
         addWasteForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(addWasteForm);
+            const menu = formData.get('menu');
+            const weight = parseFloat(formData.get('weight'));
+            const date = formData.get('date');
+            const imageUrlFile = formData.get('wasteImage'); // Get the file itself
 
             try {
-                // TODO: Update to your Render.com Backend URL
-                const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/add', {
-                    method: 'POST',
-                    body: formData
+                let imageUrl = null;
+                if (imageUrlFile && imageUrlFile.size > 0) {
+                    const storageRef = storage.ref(`waste_images/${Date.now()}_${imageUrlFile.name}`);
+                    const uploadTask = storageRef.put(imageUrlFile);
+
+                    await uploadTask; // Wait for upload to complete
+                    imageUrl = await storageRef.getDownloadURL(); // Get public URL
+                }
+
+                // Add document to Firestore
+                const userId = auth.currentUser ? auth.currentUser.uid : null;
+                if (!userId) {
+                    alert('กรุณาเข้าสู่ระบบก่อนโพสต์ข้อมูล');
+                    return;
+                }
+
+                await db.collection('wasteentries').add({
+                    schoolId: userId, // Link to school user ID
+                    menu,
+                    weight,
+                    date: firebase.firestore.Timestamp.fromDate(new Date(date)), // Convert date string to Firestore Timestamp
+                    imageUrl,
+                    postedAt: firebase.firestore.FieldValue.serverTimestamp(), // Server timestamp for creation
+                    isReceived: false,
+                    isDelivered: false
                 });
 
-                if (response.ok) {
-                    alert('บันทึกข้อมูลเศษอาหารสำเร็จ!');
-                    loadSchoolDashboard();
-                } else {
-                    const errorData = await response.json();
-                    alert('บันทึกข้อมูลไม่สำเร็จ: ' + (errorData.msg || 'เกิดข้อผิดพลาด'));
-                }
+                // Update school's wastePostsCount and stars
+                const schoolUserRef = db.collection('users').doc(userId);
+                await db.runTransaction(async (transaction) => {
+                    const schoolUserDoc = await transaction.get(schoolUserRef);
+                    if (schoolUserDoc.exists) {
+                        const newWastePostsCount = (schoolUserDoc.data().wastePostsCount || 0) + 1;
+                        const newStars = calculateStars(newWastePostsCount);
+                        transaction.update(schoolUserRef, {
+                            wastePostsCount: newWastePostsCount,
+                            stars: newStars
+                        });
+                        localStorage.setItem('userStars', newStars); // Update local storage
+                    }
+                });
+
+                alert('บันทึกข้อมูลเศษอาหารสำเร็จ!');
+                loadSchoolDashboard();
             } catch (error) {
                 console.error('Add Waste Error:', error);
-                if (error.message !== 'Unauthorized or Forbidden') {
-                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
-                }
+                alert('บันทึกข้อมูลไม่สำเร็จ: ' + error.message);
             }
         });
 
@@ -510,43 +741,69 @@ function loadContent(contentHtml) {
         }
     }
 
-    // --- Dashboard specific buttons ---
+    const editProfileForm = document.getElementById('editProfileForm');
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            alert('คุณกดบันทึกข้อมูลแก้ไขแล้ว! (ยังไม่ส่งข้อมูลไปยัง Backend)');
+            // TODO: Phase 2 - Implement Backend API to update user profile
+            // Example:
+            // const userId = auth.currentUser ? auth.currentUser.uid : null;
+            // if (!userId) { alert('กรุณาเข้าสู่ระบบเพื่อแก้ไขโปรไฟล์'); return; }
+            // const formData = new FormData(editProfileForm);
+            // const updateData = {
+            //     instituteName: formData.get('instituteName') || undefined,
+            //     address: formData.get('address') || undefined,
+            //     contactNumber: formData.get('contactNumber') || undefined,
+            //     name: formData.get('name') || undefined,
+            //     purpose: formData.get('purpose') || undefined,
+            //     otherPurpose: formData.get('otherPurpose') || undefined
+            // };
+            // if (formData.get('password')) { // Only update password if provided
+            //     try {
+            //         await auth.currentUser.updatePassword(formData.get('password'));
+            //         console.log("Password updated successfully.");
+            //     } catch (passwordError) {
+            //         console.error("Error updating password:", passwordError);
+            //         alert("ไม่สามารถเปลี่ยนรหัสผ่านได้: " + passwordError.message);
+            //         return;
+            //     }
+            // }
+            // await db.collection('users').doc(userId).update(updateData);
+            // alert('บันทึกข้อมูลสำเร็จ!');
+            loadSchoolDashboard(); // Go back to dashboard
+        });
+    }
+
+
+    // --- Dashboard specific buttons (always available on dashboards) ---
     if (document.getElementById('addWasteDataButton')) {
         document.getElementById('addWasteDataButton').addEventListener('click', () => {
             loadContent(getAddWasteDataHtml());
         });
     }
-    // Event listener for "ดูรายงานวิเคราะห์" button
     if (document.getElementById('viewAnalysisButton')) {
         document.getElementById('viewAnalysisButton').addEventListener('click', loadAnalysisPage);
     }
-    // Event listener for "แก้ไขข้อมูล" button
     if (document.getElementById('editProfileButton')) {
         document.getElementById('editProfileButton').addEventListener('click', loadEditProfilePage);
     }
-    // Event listener for "ความรู้เรื่องการกำจัดขยะ" button
     if (document.getElementById('knowledgeButton')) {
         document.getElementById('knowledgeButton').addEventListener('click', loadKnowledgePage);
     }
-    // NEW: Event listener for "รายการเศษอาหารที่ต้องส่ง" button (School)
     if (document.getElementById('pendingDeliveryButton')) {
         document.getElementById('pendingDeliveryButton').addEventListener('click', loadPendingDeliveryPage);
     }
-    // NEW: Event listener for "รายการเศษอาหารที่รับแล้ว" button (Farmer)
     if (document.getElementById('receivedWasteButton')) {
         document.getElementById('receivedWasteButton').addEventListener('click', loadReceivedWastePage);
     }
 
-
-    // --- Farmer Dashboard Filter button ---
+    // --- Farmer Dashboard Filter button (only on farmer dashboard) ---
     if (document.getElementById('filterSearchButton')) {
         document.getElementById('filterSearchButton').addEventListener('click', applyFarmerFilters);
     }
 
-    // NEW: Event listener for School Scan QR button (on pending delivery page)
-    // This listener is specific to the pending delivery page, so it needs to be attached after that page is loaded
-    // It's also part of the loadContent function now, so it will be called automatically
-    // The actual QR code scanning will be a prompt for simplicity for now
+    // NEW: School Scan QR button (on pending delivery page)
     const scanQRButton = document.getElementById('scanQRButton');
     if (scanQRButton) {
         scanQRButton.addEventListener('click', async () => {
@@ -568,16 +825,16 @@ function getMainPageHtml() {
             <div class="cards-and-descriptions-wrapper">
                 <div class="card-with-description">
                     <div class="card">
-                        <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
-                        <img src="images/school.jpg" alt="รูปภาพโรงเรียน" class="card-image">
+                        <!-- TODO: Replace with your actual school image path -->
+                        <img src="images/school_image.jpg" alt="รูปภาพโรงเรียน" class="card-image">
                         <button class="button" id="schoolButton">โรงเรียน</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อลงทะเบียนและจัดการเศษอาหารเหลือจากโรงเรียนของคุณ</p>
                 </div>
                 <div class="card-with-description">
                     <div class="card">
-                        <!-- *** คุณต้องเปลี่ยน Path รูปภาพตรงนี้! *** -->
-                        <img src="images/farmer.jpg" alt="รูปภาพเกษตรกร" class="card-image">
+                        <!-- TODO: Replace with your actual farmer image path -->
+                        <img src="images/farmer_image.jpg" alt="รูปภาพเกษตรกร" class="card-image">
                         <button class="button" id="farmerButton">เกษตรกร</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อเลือกประเภทเศษอาหารที่คุณต้องการนำไปใช้ประโยชน์</p>
@@ -684,6 +941,7 @@ function getFarmerLoginPageHtml() {
     `;
 }
 
+
 // School Dashboard Page HTML content - now dynamically loads data
 function getSchoolDashboardHtml() {
     return `
@@ -780,7 +1038,7 @@ function getFarmerDashboardHtml() {
                 </div>
                 <div class="main-display-area">
                     <div class="data-block-wrapper" id="farmerDataBlocks">
-                        <p style="text-align: center; color: #555;">กำลังโหลดข้อมูล...</p>
+                        <p style="text-align: center; color: #666;">กำลังโหลดข้อมูล...</p>
                     </div>
                 </div>
             </div>
@@ -800,7 +1058,7 @@ function getPostDetailsHtml(postData) {
         return `<div class="post-details-container"><p style="color: #666; text-align: center;">ไม่พบข้อมูลรายละเอียด</p><div class="form-buttons"><button type="button" class="back-button" id="backFromPostDetails">ย้อนกลับ</button></div></div>`;
     }
 
-    const date = new Date(postData.date).toLocaleDateString('th-TH', {
+    const date = new Date(postData.date.toDate()).toLocaleDateString('th-TH', {
         year: 'numeric', month: 'long', day: 'numeric'
     });
 
@@ -813,10 +1071,10 @@ function getPostDetailsHtml(postData) {
                     <p><strong>เมนู:</strong> ${postData.menu}</p>
                     <p><strong>น้ำหนัก:</strong> ${postData.weight} kg</p>
                     <p><strong>วันที่:</strong> ${date}</p>
-                    <p><strong>โรงเรียน:</strong> ${postData.school ? postData.school.instituteName : 'ไม่ระบุโรงเรียน'}</p>
-                    <p><strong>อีเมล:</strong> ${postData.school ? postData.school.email : 'ไม่ระบุ'}</p>
-                    <p><strong>ที่อยู่:</strong> ${postData.school ? postData.school.address : 'ไม่ระบุ'}</p>
-                    <p><strong>เบอร์ติดต่อ:</strong> ${postData.school ? postData.school.contactNumber : 'ไม่ระบุ'}</p>
+                    <p><strong>โรงเรียน:</strong> ${postData.schoolInfo ? postData.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน'}</p>
+                    <p><strong>อีเมล:</strong> ${postData.schoolInfo ? postData.schoolInfo.email : 'ไม่ระบุ'}</p>
+                    <p><strong>ที่อยู่:</strong> ${postData.schoolInfo ? postData.schoolInfo.address : 'ไม่ระบุ'}</p>
+                    <p><strong>เบอร์ติดต่อ:</strong> ${postData.schoolInfo ? postData.schoolInfo.contactNumber : 'ไม่ระบุ'}</p>
                 </div>
             </div>
             <div class="form-buttons">
@@ -958,8 +1216,8 @@ function getPendingDeliveryHtml(pendingItems = []) {
         pendingBlocksHtml = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่มีรายการเศษอาหารที่ต้องส่ง</p>';
     } else {
         pendingItems.forEach(item => {
-            const date = new Date(item.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
-            const receivedAt = new Date(item.receivedAt).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            const date = new Date(item.date.toDate()).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+            const receivedAt = new Date(item.receivedAt.toDate()).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' });
             pendingBlocksHtml += `
                 <div class="data-block pending-item">
                     <img src="${item.imageUrl || 'https://placehold.co/100x80/ADD8E6/000000?text=Waste+Pic'}" alt="Waste Image" class="data-item-image">
@@ -967,11 +1225,11 @@ function getPendingDeliveryHtml(pendingItems = []) {
                         <p><strong>เมนู:</strong> ${item.menu}</p>
                         <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
                         <p><strong>วันที่โพสต์:</strong> ${date}</p>
-                        <p><strong>ผู้รับ (เกษตรกร):</strong> ${item.receivedBy ? item.receivedBy.name : 'ไม่ระบุ'}</p>
-                        <p><strong>ติดต่อผู้รับ:</strong> ${item.receivedBy ? item.receivedBy.contactNumber : 'ไม่ระบุ'}</p>
+                        <p><strong>ผู้รับ (เกษตรกร):</strong> ${item.receivedByInfo ? item.receivedByInfo.name : 'ไม่ระบุ'}</p>
+                        <p><strong>ติดต่อผู้รับ:</strong> ${item.receivedByInfo ? item.receivedByInfo.contactNumber : 'ไม่ระบุ'}</p>
                         <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
                     </div>
-                    <button class="scan-qr-button" data-id="${item._id}">สแกน QR Code เพื่อยืนยัน</button>
+                    <button class="scan-qr-button" data-id="${item.id}">สแกน QR Code เพื่อยืนยัน</button>
                 </div>
             `;
         });
@@ -999,8 +1257,8 @@ function getReceivedWasteHtml(receivedItems = []) {
         receivedBlocksHtml = '<p style="color: #666; text-align: center; margin-top: 30px;">ยังไม่มีรายการเศษอาหารที่รับ</p>';
     } else {
         receivedItems.forEach(item => {
-            const date = new Date(item.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
-            const receivedAt = new Date(item.receivedAt).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            const date = new Date(item.date.toDate()).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+            const receivedAt = item.receivedAt ? new Date(item.receivedAt.toDate()).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ';
             const deliveredStatus = item.isDelivered ? 'ส่งมอบแล้ว' : 'รอส่งมอบ';
             receivedBlocksHtml += `
                 <div class="data-block received-item">
@@ -1009,12 +1267,12 @@ function getReceivedWasteHtml(receivedItems = []) {
                         <p><strong>เมนู:</strong> ${item.menu}</p>
                         <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
                         <p><strong>วันที่โพสต์:</strong> ${date}</p>
-                        <p><strong>จากโรงเรียน:</strong> ${item.school ? item.school.instituteName : 'ไม่ระบุโรงเรียน'}</p>
+                        <p><strong>จากโรงเรียน:</strong> ${item.schoolInfo ? item.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน'}</p>
                         <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
                         <p><strong>สถานะส่งมอบ:</strong> <span class="${item.isDelivered ? 'status-delivered' : 'status-pending'}">${deliveredStatus}</span></p>
                     </div>
                     ${!item.isDelivered ? `
-                        <button class="show-qr-button" data-id="${item._id}">แสดง QR Code</button>
+                        <button class="show-qr-button" data-id="${item.id}">แสดง QR Code</button>
                     ` : ''}
                 </div>
             `;
@@ -1060,10 +1318,24 @@ function getQRCodeDisplayHtml(wasteId) {
 async function loadSchoolDashboard() {
     loadContent(getSchoolDashboardHtml());
     try {
-        // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/posts');
-        const data = await response.json();
-        renderDataBlocks(data, '#schoolDataBlocks');
+        // Fetch waste entries from Firestore
+        const wasteEntriesSnapshot = await db.collection('wasteentries')
+                                             .where('isDelivered', '==', false) // Only show undelivered items
+                                             .orderBy('postedAt', 'desc')
+                                             .get();
+        let wasteData = [];
+        for (const doc of wasteEntriesSnapshot.docs) {
+            const item = { id: doc.id, ...doc.data() };
+            // Manually fetch school info for display
+            if (item.schoolId) {
+                const schoolDoc = await db.collection('users').doc(item.schoolId).get();
+                if (schoolDoc.exists) {
+                    item.schoolInfo = schoolDoc.data();
+                }
+            }
+            wasteData.push(item);
+        }
+        renderDataBlocks(wasteData, '#schoolDataBlocks');
     }
     catch (error) {
         console.error('Failed to load school dashboard data:', error);
@@ -1074,15 +1346,46 @@ async function loadSchoolDashboard() {
 async function loadFarmerDashboard(filters = {}) {
     loadContent(getFarmerDashboardHtml());
     try {
-        // TODO: Update to your Render.com Backend URL
-        let url = new URL('https://phuket-food-hero-api.onrender.com/api/waste/filter');
-        Object.keys(filters).forEach(key => {
-            if (filters[key]) url.searchParams.append(key, filters[key]);
-        });
+        let query = db.collection('wasteentries').where('isDelivered', '==', false); // Only show undelivered for general view
 
-        const response = await authenticatedFetch(url.toString());
-        const data = await response.json();
-        renderDataBlocks(data, '#farmerDataBlocks');
+        // Apply filters
+        if (filters.weightMin) query = query.where('weight', '>=', parseFloat(filters.weightMin));
+        if (filters.weightMax) query = query.where('weight', '<=', parseFloat(filters.weightMax));
+        if (filters.date) {
+            const startDate = firebase.firestore.Timestamp.fromDate(new Date(filters.date));
+            const endDate = firebase.firestore.Timestamp.fromDate(new Date(new Date(filters.date).setDate(new Date(filters.date).getDate() + 1)));
+            query = query.where('date', '>=', startDate).where('date', '<', endDate);
+        }
+        // Filtering by menu and schoolName requires fetching all and then client-side filter
+        // since Firestore does not support case-insensitive contains or joins on multiple fields
+        // that are not part of an exact match or range query without complex indexing or client-side filtering.
+        // For simplicity and given previous context, we'll keep client-side filtering for these
+        // if precise Firestore queries become too complex or require specific indexes.
+        
+        // For now, we'll fetch all filterable items and then client-side filter for menu/schoolName if needed
+        const wasteEntriesSnapshot = await query.orderBy('postedAt', 'desc').get();
+        let wasteData = [];
+        for (const doc of wasteEntriesSnapshot.docs) {
+            const item = { id: doc.id, ...doc.data() };
+            // Manually fetch school info for display
+            if (item.schoolId) {
+                const schoolDoc = await db.collection('users').doc(item.schoolId).get();
+                if (schoolDoc.exists) {
+                    item.schoolInfo = schoolDoc.data();
+                }
+            }
+            wasteData.push(item);
+        }
+
+        // Apply client-side filters for menu and schoolName
+        if (filters.menu) {
+            wasteData = wasteData.filter(item => item.menu.toLowerCase().includes(filters.menu.toLowerCase()));
+        }
+        if (filters.schoolName) {
+            wasteData = wasteData.filter(item => item.schoolInfo && item.schoolInfo.instituteName.toLowerCase().includes(filters.schoolName.toLowerCase()));
+        }
+
+        renderDataBlocks(wasteData, '#farmerDataBlocks');
 
         // Restore filter values if filters were applied
         if (filters.weightMin) document.getElementById('filterWeightMin').value = filters.weightMin;
@@ -1109,36 +1412,79 @@ async function applyFarmerFilters() {
 }
 
 async function loadPostDetails(postId) {
+    loadContent(getPostDetailsHtml()); // Load empty structure first
     try {
-        // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/waste/posts/${postId}`);
-        const postData = await response.json();
+        const wasteEntryDoc = await db.collection('wasteentries').doc(postId).get();
+        if (!wasteEntryDoc.exists) {
+            alert('ไม่พบข้อมูลเศษอาหาร');
+            loadFarmerDashboard();
+            return;
+        }
+        const postData = { id: wasteEntryDoc.id, ...wasteEntryDoc.data() };
+
+        // Fetch school info
+        if (postData.schoolId) {
+            const schoolDoc = await db.collection('users').doc(postData.schoolId).get();
+            if (schoolDoc.exists) {
+                postData.schoolInfo = schoolDoc.data();
+            }
+        }
+        // Fetch farmer info if received
+        if (postData.isReceived && postData.receivedBy) {
+            const farmerDoc = await db.collection('users').doc(postData.receivedBy).get();
+            if (farmerDoc.exists) {
+                postData.receivedByInfo = farmerDoc.data();
+            }
+        }
+
         loadContent(getPostDetailsHtml(postData));
     } catch (error) {
         console.error('Failed to load post details:', error);
-        loadContent(getPostDetailsHtml(null));
+        alert('ไม่สามารถโหลดข้อมูลรายละเอียดได้: ' + error.message);
+        loadFarmerDashboard(); // Go back to dashboard on error
     }
 }
 
 async function loadAnalysisPage() {
     loadContent(getAnalysisPageHtml());
     try {
-        // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/analyze');
-        const { analysis, rawData } = await response.json(); // Get both analysis and rawData
+        const userId = localStorage.getItem('userId');
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const sevenDaysAgoTimestamp = firebase.firestore.Timestamp.fromDate(sevenDaysAgo);
 
-        if (analysis.length === 0) {
+        const wasteEntriesSnapshot = await db.collection('wasteentries')
+                                            .where('schoolId', '==', userId)
+                                            .where('date', '>=', sevenDaysAgoTimestamp) // Filter for last 7 days
+                                            .orderBy('date', 'desc') // Order by date for analysis
+                                            .get();
+        let rawData = [];
+        wasteEntriesSnapshot.forEach(doc => {
+            rawData.push(doc.data());
+        });
+
+        if (rawData.length === 0) {
             document.getElementById('wasteChart').style.display = 'none';
-            document.querySelector('.chart-container').innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่พบข้อมูลสำหรับวิเคราะห์</p>';
+            document.querySelector('.chart-container').innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่พบข้อมูลสำหรับวิเคราะห์ในช่วง 7 วันล่าสุด</p>';
             return;
         }
 
+        // Analysis logic: Sum weight per menu
+        const analysis = {};
+        rawData.forEach(entry => {
+            if (analysis[entry.menu]) {
+                analysis[entry.menu] += entry.weight;
+            } else {
+                analysis[entry.menu] = entry.weight;
+            }
+        });
+
+        // Convert to array for Chart.js
+        const labels = Object.keys(analysis);
+        const data = Object.values(analysis);
+
         const ctx = document.getElementById('wasteChart').getContext('2d');
         
-        // Prepare data for Chart.js
-        const labels = analysis.map(item => item.menu);
-        const data = analysis.map(item => item.totalWeight);
-
         new Chart(ctx, {
             type: 'bar', // Bar chart for total waste per menu
             data: {
@@ -1147,67 +1493,43 @@ async function loadAnalysisPage() {
                     label: 'ปริมาณเศษอาหาร (kg)',
                     data: data,
                     backgroundColor: [
-                        'rgba(255, 99, 132, 0.6)',
-                        'rgba(54, 162, 235, 0.6)',
-                        'rgba(255, 206, 86, 0.6)',
-                        'rgba(75, 192, 192, 0.6)',
-                        'rgba(153, 102, 255, 0.6)',
-                        'rgba(255, 159, 64, 0.6)'
+                        'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)',
+                        'rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)', 'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)', 'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)'
                     ],
                     borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
+                        'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)',
+                        'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'
                     ],
                     borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // Allow chart to adjust size
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'ปริมาณ (kg)',
-                            color: '#333'
-                        },
-                        ticks: {
-                            color: '#333'
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
+                        title: { display: true, text: 'ปริมาณ (kg)', color: '#333' },
+                        ticks: { color: '#333' },
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' }
                     },
                     x: {
-                        title: {
-                            display: true,
-                            text: 'เมนูอาหาร',
-                            color: '#333'
-                        },
-                        ticks: {
-                            color: '#333'
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        }
+                        title: { display: true, text: 'เมนูอาหาร', color: '#333' },
+                        ticks: { color: '#333' },
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' }
                     }
                 },
                 plugins: {
-                    legend: {
-                        display: false // No legend needed for single dataset
-                    },
+                    legend: { display: false },
                     title: {
                         display: true,
                         text: 'เมนูที่เหลือมากที่สุดในสัปดาห์',
                         color: '#333',
-                        font: {
-                            size: 18
-                        }
+                        font: { size: 18 }
                     }
                 }
             }
@@ -1230,8 +1552,13 @@ async function loadEditProfilePage() {
             return;
         }
         // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch(`https://phuket-food-hero-api.onrender.com/api/auth/profile/${userId}`); // Assuming API to get profile
-        const userData = await response.json();
+        const userDoc = await db.collection('users').doc(userId).get();
+        if (!userDoc.exists) {
+            alert('ไม่พบข้อมูลผู้ใช้');
+            loadMainPage();
+            return;
+        }
+        const userData = userDoc.data();
         
         // Populate form fields
         document.getElementById('editEmail').value = userData.email || '';
@@ -1253,10 +1580,9 @@ async function loadEditProfilePage() {
         if (document.getElementById('editPurposeSelect')) {
             document.getElementById('editPurposeSelect').addEventListener('change', toggleEditOtherPurposeInput);
         }
-
     } catch (error) {
         console.error('Failed to load profile data:', error);
-        alert('ไม่สามารถโหลดข้อมูลโปรไฟล์ได้');
+        alert('ไม่สามารถโหลดข้อมูลโปรไฟล์ได้: ' + error.message);
     }
 }
 
@@ -1269,51 +1595,26 @@ function loadKnowledgePage() {
 async function loadPendingDeliveryPage() {
     loadContent(getPendingDeliveryHtml()); // Load empty structure first
     try {
-        // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/pending-delivery');
-        const data = await response.json();
-        // Render pending items
-        const pendingDeliveryBlocksWrapper = document.querySelector('#pendingDeliveryBlocks');
-        if (pendingDeliveryBlocksWrapper) {
-            pendingDeliveryBlocksWrapper.innerHTML = ''; // Clear loading message
-            if (data.length === 0) {
-                pendingDeliveryBlocksWrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่มีรายการเศษอาหารที่ต้องส่ง</p>';
-            } else {
-                data.forEach(item => {
-                    const date = new Date(item.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
-                    const receivedAt = new Date(item.receivedAt).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' });
-                    const pendingItemHtml = `
-                        <div class="data-block pending-item">
-                            <img src="${item.imageUrl || 'https://placehold.co/100x80/ADD8E6/000000?text=Waste+Pic'}" alt="Waste Image" class="data-item-image">
-                            <div class="data-item-details">
-                                <p><strong>เมนู:</strong> ${item.menu}</p>
-                                <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
-                                <p><strong>วันที่โพสต์:</strong> ${date}</p>
-                                <p><strong>ผู้รับ (เกษตรกร):</strong> ${item.receivedBy ? item.receivedBy.name : 'ไม่ระบุ'}</p>
-                                <p><strong>ติดต่อผู้รับ:</strong> ${item.receivedBy ? item.receivedBy.contactNumber : 'ไม่ระบุ'}</p>
-                                <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
-                            </div>
-                            <button class="scan-qr-button" data-id="${item._id}">สแกน QR Code เพื่อยืนยัน</button>
-                        </div>
-                    `;
-                    pendingDeliveryBlocksWrapper.insertAdjacentHTML('beforeend', pendingItemHtml);
-                });
-                // Attach event listeners for scan QR buttons after rendering
-                pendingDeliveryBlocksWrapper.querySelectorAll('.scan-qr-button').forEach(button => {
-                    button.addEventListener('click', async (e) => {
-                        const wasteId = e.target.dataset.id;
-                        const qrValue = prompt('จำลองการสแกน QR Code: กรุณากรอก Waste ID ที่แสดงบน QR Code ของเกษตรกรเพื่อยืนยันการส่งมอบ');
-                        if (qrValue && qrValue === wasteId) {
-                            await handleConfirmDelivery(wasteId);
-                        } else if (qrValue) {
-                            alert('รหัส QR Code ไม่ตรงกับรายการที่เลือก');
-                        } else {
-                            alert('กรุณากรอก ID เศษอาหารเพื่อยืนยัน');
-                        }
-                    });
-                });
+        const userId = localStorage.getItem('userId');
+        const pendingEntriesSnapshot = await db.collection('wasteentries')
+                                               .where('schoolId', '==', userId)
+                                               .where('isReceived', '==', true) // Received by farmer
+                                               .where('isDelivered', '==', false) // Not yet delivered
+                                               .orderBy('receivedAt', 'desc')
+                                               .get();
+        let pendingData = [];
+        for (const doc of pendingEntriesSnapshot.docs) {
+            const item = { id: doc.id, ...doc.data() };
+            // Manually fetch farmer info for display
+            if (item.receivedBy) {
+                const farmerDoc = await db.collection('users').doc(item.receivedBy).get();
+                if (farmerDoc.exists) {
+                    item.receivedByInfo = farmerDoc.data();
+                }
             }
+            pendingData.push(item);
         }
+        renderDataBlocks(pendingData, '#pendingDeliveryBlocks'); // Render into the specific wrapper
     } catch (error) {
         console.error('Failed to load pending delivery data:', error);
         document.querySelector('#pendingDeliveryBlocks').innerHTML = '<p style="color: red; text-align: center;">ไม่สามารถโหลดข้อมูลรายการที่ต้องส่งได้</p>';
@@ -1325,47 +1626,25 @@ async function loadPendingDeliveryPage() {
 async function loadReceivedWastePage() {
     loadContent(getReceivedWasteHtml()); // Load empty structure first
     try {
-        // TODO: Update to your Render.com Backend URL
-        const response = await authenticatedFetch('https://phuket-food-hero-api.onrender.com/api/waste/received-history');
-        const data = await response.json();
-        
-        const receivedWasteBlocksWrapper = document.querySelector('#receivedWasteBlocks');
-        if (receivedWasteBlocksWrapper) {
-            receivedWasteBlocksWrapper.innerHTML = ''; // Clear loading message
-            if (data.length === 0) {
-                receivedWasteBlocksWrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ยังไม่มีรายการเศษอาหารที่รับ</p>';
-            } else {
-                data.forEach(item => {
-                    const date = new Date(item.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
-                    const receivedAt = new Date(item.receivedAt).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' });
-                    const deliveredStatus = item.isDelivered ? 'ส่งมอบแล้ว' : 'รอส่งมอบ';
-                    const receivedItemHtml = `
-                        <div class="data-block received-item">
-                            <img src="${item.imageUrl || 'https://placehold.co/100x80/ADD8E6/000000?text=Waste+Pic'}" alt="Waste Image" class="data-item-image">
-                            <div class="data-item-details">
-                                <p><strong>เมนู:</strong> ${item.menu}</p>
-                                <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
-                                <p><strong>วันที่โพสต์:</strong> ${date}</p>
-                                <p><strong>จากโรงเรียน:</strong> ${item.school ? item.school.instituteName : 'ไม่ระบุโรงเรียน'}</p>
-                                <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
-                                <p><strong>สถานะส่งมอบ:</strong> <span class="${item.isDelivered ? 'status-delivered' : 'status-pending'}">${deliveredStatus}</span></p>
-                            </div>
-                            ${!item.isDelivered ? `
-                                <button class="show-qr-button" data-id="${item._id}">แสดง QR Code</button>
-                            ` : ''}
-                        </div>
-                    `;
-                    receivedWasteBlocksWrapper.insertAdjacentHTML('beforeend', receivedItemHtml);
-                });
-                // Attach Show QR button listeners after content is rendered
-                receivedWasteBlocksWrapper.querySelectorAll('.show-qr-button').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const wasteId = e.target.dataset.id;
-                        loadQRCodeDisplayPage(wasteId);
-                    });
-                });
+        const userId = localStorage.getItem('userId');
+        const receivedEntriesSnapshot = await db.collection('wasteentries')
+                                                .where('receivedBy', '==', userId) // Items this farmer received
+                                                .where('isReceived', '==', true) // Confirmed as received
+                                                .orderBy('receivedAt', 'desc')
+                                                .get();
+        let receivedData = [];
+        for (const doc of receivedEntriesSnapshot.docs) {
+            const item = { id: doc.id, ...doc.data() };
+            // Manually fetch school info for display
+            if (item.schoolId) {
+                const schoolDoc = await db.collection('users').doc(item.schoolId).get();
+                if (schoolDoc.exists) {
+                    item.schoolInfo = schoolDoc.data();
+                }
             }
+            receivedData.push(item);
         }
+        renderDataBlocks(receivedData, '#receivedWasteBlocks'); // Render into the specific wrapper
     } catch (error) {
         console.error('Failed to load received waste data:', error);
         document.querySelector('#receivedWasteBlocks').innerHTML = '<p style="color: red; text-align: center;">ไม่สามารถโหลดข้อมูลรายการที่รับแล้วได้</p>';
@@ -1417,6 +1696,7 @@ function loadMainPage() {
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userStars'); // Clear stars on logout
     loadContent(getMainPageHtml());
 }
 
@@ -1442,7 +1722,6 @@ document.addEventListener('DOMContentLoaded', () => {
             loadGenericLoginPage();
         });
     } else {
-        // This warning will appear in the console if the element is not found.
         console.warn("Warning: #signInLink not found. The sign-in button may not be functional.");
     }
 
