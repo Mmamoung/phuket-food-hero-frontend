@@ -10,6 +10,14 @@
     <link rel="stylesheet" href="style.css">
     <!-- Chart.js CDN for analysis graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- NEW: Firebase SDKs - Add these CDN links in your index.html head -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <!-- End Firebase SDKs -->
+
 </head>
 <body>
     <header class="header">
@@ -19,7 +27,7 @@
                 <span>123456@gmail.com</span>
             </div>
             <div class="sign-in">
-                <a href="#" id="signInLink">sign-in</a> <!-- ตรวจสอบ ID ตรงนี้ -->
+                <a href="#" id="signInLink">sign-in</a>
             </div>
         </div>
         <div class="hero-section">
@@ -31,15 +39,16 @@
         <!-- Background Overlay (moved from ::before pseudo-element for better z-index control) -->
         <div class="background-overlay"></div>
         <!-- Content will be loaded here by JavaScript -->
+        <button type="button" class="add-f2f-button" id="addF2FPostButton">เพิ่มโพสต์ F2F</button>
     </main>
 
     <footer class="footer">
-        <p>&copy; 2025 PHUKET FOOD HERO. All rights reserved.</p>
+        <p>© 2025 PHUKET FOOD HERO. All rights reserved.</p>
         <div class="contact-email">
             <a href="mailto:pawisrongsin@gmail.com">ติดต่อเรา: pawisrongsin@gmail.com</a>
         </div>
     </footer>
 
-    <script src="script.js"></script> <!-- ตรวจสอบตำแหน่ง Script tag -->
+    <script src="script.js"></script>
 </body>
 </html>
