@@ -2,18 +2,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
 
 :root {
-    --primary-blue: #007bff; /* Blue color for buttons */
+    --primary-blue: #28a745; /* Changed to a shade of green for primary actions */
     --dark-text: #333;
     --light-text: #fff;
     --grey-bg: #f4f4f4;
-    --header-bg: #fff;
+    --header-bg: #c8e6c9; /* Light green for header */
     --footer-bg: #333;
     --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     --input-border: #ccc;
-    --input-focus-border: #007bff;
-    --sidebar-bg: #222; /* Dark background for sidebar */
-    --data-block-bg: #ADD8E6; /* Light blue for data blocks */
-    --upload-box-bg: #007bff; /* Blue for upload box */
+    --input-focus-border: #28a745; /* Green for focus */
+    --sidebar-bg: #222;/* Dark background for sidebar */
+    --data-block-bg: #d4edda; /* Light green for data blocks */
+    --upload-box-bg: #28a745; /* Green for upload box */
+
+    /* NEW: Colors for icon circles */
+    --circle-green: #4CAF50;
+    --circle-blue: #03A9F4;
+    --circle-yellow: #FFC107;
 }
 
 body {
@@ -25,6 +30,20 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh; /* Ensures footer stays at the bottom */
+    overflow-x: hidden !important;
+    width: 100vw;
+    max-width: 100vw;
+}
+
+html, body {
+    overflow-x: hidden !important;
+    width: 100vw;
+    max-width: 100vw;
+}
+#app-container {
+    overflow-x: hidden;
+    width: 100vw;
+    max-width: 100vw;
 }
 
 .header {
@@ -32,6 +51,8 @@ body {
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     text-align: center;
+    position: relative;
+    z-index: 100;
 }
 
 .top-bar {
@@ -54,8 +75,8 @@ body {
     text-decoration: none;
     color: var(--dark-text);
     font-weight: bold;
-    position: relative; /* Ensure z-index works */
-    z-index: 100; /* Bring sign-in button to front */
+    position: relative;
+    z-index: 101;
 }
 
 .hero-section {
@@ -74,29 +95,27 @@ body {
 .content-section {
     flex-grow: 1;
     display: flex;
-    flex-direction: column; /* Stack question and cards vertically */
-    justify-content: center; /* Center content vertically */
-    align-items: center; /* Center content horizontally */
-    padding: 40px 20px; /* Adjust padding as needed */
-    /* TODO: Replace with your actual background image path */
-    background-image: url('images/phukettrash.jpg');
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background-image: url('images/background.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     position: relative;
-    z-index: 0; /* Ensure content-section is behind its children with z-index 2+ */
+    z-index: 0;
 }
 
-/* Add overlay to make text and buttons stand out */
-.content-section::before {
-    content: '';
+/* Background Overlay (now a div in HTML, not a pseudo-element) */
+.background-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.6); /* Increased opacity for better white text readability */
-    z-index: 1; /* Overlay is above content-section but below loaded HTML */
+    z-index: 1;
 }
 
 /* Styles for the main page content layout */
@@ -105,56 +124,61 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 1000px; /* Limit overall width for better layout */
-    position: relative; /* Ensure z-index works */
-    z-index: 2; /* Main page content above overlay */
+    max-width: 1200px; /* Increased max-width for landing page */
+    position: relative;
+    z-index: 2;
 }
 
 .main-question-text {
-    color: var(--light-text); /* White color */
-    font-size: 1.8em; /* Adjust size as needed */
+    color: var(--light-text);
+    font-size: 1.8em;
     font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
-    margin-bottom: 40px; /* Space between question and cards */
-    text-align: center; /* Ensure it's centered */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    margin-bottom: 40px;
+    text-align: center;
 }
 
 .cards-and-descriptions-wrapper {
     display: flex;
     justify-content: center;
-    gap: 40px; /* Space between the two card-description groups */
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 40px;
+    flex-wrap: wrap;
     width: 100%;
 }
 
 .card-with-description {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Center card and text horizontally */
-    text-align: center; /* Center text within its own block */
-    max-width: 450px; /* Max width for each card group */
+    align-items: center;
+    text-align: center;
+    max-width: 450px;
 }
 
 .card {
-    background-color: var(--header-bg); /* White background for the card itself */
+    background-color: var(--header-bg);
     border-radius: 15px;
     box-shadow: var(--card-shadow);
     overflow: hidden;
-    width: 100%; /* Take full width of its parent (.card-with-description) */
-    padding-bottom: 20px; /* Padding inside the card for button */
-    margin-bottom: 20px; /* Space between card and description text */
+    width: 100%;
+    height: 100%;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
 .card-image {
-    width: 100%;
-    height: 280px;
+    width: 200px;
+    height: 200px;
     object-fit: cover;
     display: block;
-    border-bottom: 5px solid var(--primary-blue);
+    border-radius: 50%; /* Make it circular */
+    border: 5px solid var(--primary-blue);
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
+
 
 .button {
     background-color: var(--primary-blue);
@@ -166,7 +190,7 @@ body {
     font-weight: 700;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: 20px; /* Space between image and button */
+    margin-top: 20px;
 }
 
 .button:hover {
@@ -174,11 +198,11 @@ body {
 }
 
 .card-description-text {
-    color: var(--light-text); /* White color for description text */
-    font-size: 0.95em; /* Adjust size as needed */
+    color: var(--light-text);
+    font-size: 0.95em;
     line-height: 1.4;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
-    max-width: 80%; /* Limit width for better readability */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    max-width: 80%;
 }
 
 
@@ -191,8 +215,8 @@ body {
     width: 100%;
     max-width: 500px;
     text-align: center;
-    position: relative; /* Ensure z-index works */
-    z-index: 2; /* Login form above overlay */
+    position: relative;
+    z-index: 2;
 }
 
 .login-container h2 {
@@ -219,13 +243,15 @@ body {
 .form-group input[type="password"],
 .form-group input[type="tel"],
 .form-group select {
-    width: calc(100% - 20px); /* Adjust for padding */
+    width: calc(100% - 20px);
     padding: 12px 10px;
     border: 1px solid var(--input-border);
     border-radius: 8px;
     font-size: 1em;
-    box-sizing: border-box; /* Include padding in width */
+    box-sizing: border-box;
     transition: border-color 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: var(--dark-text);
 }
 
 .form-group input:focus,
@@ -245,6 +271,8 @@ body {
     min-height: 80px;
     resize: vertical;
     transition: border-color 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: var(--dark-text);
 }
 
 .form-group textarea:focus {
@@ -266,6 +294,8 @@ body {
     transition: background-color 0.3s ease;
     width: 100%;
     margin-top: 15px;
+    position: relative;
+    z-index: 5;
 }
 
 .login-button:hover {
@@ -273,7 +303,7 @@ body {
 }
 
 .back-button {
-    background-color: #6c757d; /* Grey color for back button */
+    background-color: #6c757d;
     color: var(--light-text);
     border: none;
     padding: 10px 20px;
@@ -283,6 +313,8 @@ body {
     transition: background-color 0.3s ease;
     margin-top: 10px;
     width: 100%;
+    position: relative;
+    z-index: 5;
 }
 
 .back-button:hover {
@@ -295,71 +327,65 @@ body {
     margin-top: 10px;
 }
 
-/* Styles for School Dashboard */
-.school-dashboard-container {
-    display: flex;
-    flex-direction: column; /* Stack content area and buttons vertically */
-    width: 100%;
-    max-width: 1200px; /* Adjust max width for dashboard */
-    height: 80vh; /* ให้มีความสูงเพื่อให้เห็น scroll ได้ถ้าข้อมูลเยอะ */
-    background-color: transparent; /* พื้นหลังโปร่งใสเพราะมี overlay อยู่แล้ว */
-    z-index: 2; /* ให้อยู่เหนือ background overlay */
-    padding: 20px;
-    box-sizing: border-box; /* Include padding in width/height */
-}
-
+/* Dashboard specific content area and sidebar */
 .dashboard-content-area {
     display: flex;
-    flex-grow: 1; /* Allow content area to take available space */
-    background-color: var(--header-bg); /* White background for the main content area */
+    flex-grow: 1;
+    background-color: var(--header-bg);
     border-radius: 15px;
     box-shadow: var(--card-shadow);
-    overflow: hidden; /* Hide scrollbars if content overflows */
-    margin-bottom: 20px; /* Space between content and buttons */
-    position: relative; /* For z-index to work correctly inside */
-    z-index: 3; /* Ensure content is above lower z-index elements */
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 3;
 }
 
 .sidebar {
-    width: 250px; /* Fixed width for sidebar */
-    background-color: var(--sidebar-bg); /* Dark background */
+    background-color: var(--sidebar-bg);
     color: var(--light-text);
-    padding: 20px;
+    padding: 24px 18px 24px 18px;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     border-top-left-radius: 15px;
     border-bottom-left-radius: 15px;
-    position: relative; /* Ensure z-index works for sidebar content */
-    z-index: 4; /* Sidebar above main content area */
+    width: 250px;
+    min-width: 220px;
+    max-width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
 }
 
 .main-display-area {
-    flex-grow: 1; /* Take remaining space */
+    flex-grow: 1;
     padding: 20px;
-    overflow-y: auto; /* Enable vertical scrolling if content overflows */
-    position: relative; /* Ensure z-index works for main area content */
-    z-index: 3; /* Main display area above lower z-index elements */
+    position: relative;
+    z-index: 3;
 }
 
+/* Data block wrapper */
 .data-block-wrapper {
-    display: flex; /* Changed from grid to flex */
-    flex-direction: column; /* Stack items vertically */
-    gap: 20px; /* Space between data blocks */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
 }
 
+/* Individual data block */
 .data-block {
-    background-color: var(--data-block-bg); /* Light blue background */
+    background-color: var(--data-block-bg);
     border-radius: 10px;
     padding: 15px;
     display: flex;
     align-items: center;
     gap: 15px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Ensure it takes full width in the column layout */
-    position: relative; /* For positioning details/delete button */
-    z-index: 5; /* Ensure data blocks are on top of everything within main-display-area */
+    width: 100%;
+    position: relative;
+    z-index: 5;
 }
 
 .data-item-image {
@@ -370,7 +396,7 @@ body {
 }
 
 .data-item-details {
-    flex-grow: 1; /* Allow details to take up space */
+    flex-grow: 1;
 }
 
 .data-item-details p {
@@ -383,8 +409,31 @@ body {
     font-weight: 600;
 }
 
-/* Details button in data block */
-.details-button {
+/* Buttons inside data blocks */
+.data-block-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: relative;
+    z-index: 6;
+    margin-left: 0;
+    align-items: flex-start;
+}
+
+.details-button,
+.delete-button,
+.receive-waste-button,
+.scan-qr-button,
+.show-qr-button {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.details-button,
+.delete-button,
+.receive-waste-button,
+.scan-qr-button,
+.show-qr-button {
     background-color: var(--primary-blue);
     color: var(--light-text);
     border: none;
@@ -393,77 +442,55 @@ body {
     font-size: 0.85em;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    white-space: nowrap; /* Prevent text wrapping */
-    position: relative; /* Ensure it's clickable */
-    z-index: 6; /* Ensure buttons are above other content within data-block */
-}
-
-.details-button:hover {
-    background-color: #0056b3;
-}
-
-/* Delete button in data block */
-.delete-button {
-    background-color: #dc3545; /* Red color for delete */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
     white-space: nowrap;
-    margin-left: 10px; /* Space from details */
-    position: relative; /* Ensure it's clickable */
-    z-index: 6;
+    position: relative;
+    z-index: 7;
+    min-width: 120px;
+    text-align: center;
 }
 
-.delete-button:hover {
-    background-color: #c82333;
-}
-
-/* Receive Waste Button */
-.receive-waste-button {
-    background-color: #00bcd4; /* Cyan/light blue for receive */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-    margin-right: 10px; /* Space from details */
-    position: relative; /* Ensure it's clickable */
-    z-index: 6;
-}
-
-.receive-waste-button:hover {
-    background-color: #0097a7;
-}
+.details-button:hover { background-color: #0056b3; }
+.delete-button { background-color: #dc3545; } /* Red for delete button on dashboard */
+.delete-button:hover { background-color: #c82333; }
+.receive-waste-button { background-color: #00bcd4; }
+.receive-waste-button:hover { background-color: #0097a7; }
+.scan-qr-button { background-color: #fd7e14; }
+.scan-qr-button:hover { background-color: #e66a00; }
+.show-qr-button { background-color: #6f42c1; }
+.show-qr-button:hover { background-color: #5d35a6; }
 
 /* Received Status Text */
 .received-status {
     font-size: 0.9em;
     font-weight: 600;
-    color: #28a745; /* Green */
+    color: #28a745;
     white-space: nowrap;
     margin-right: 10px;
-    position: relative; /* Ensure it's visible */
+    position: relative;
     z-index: 6;
+    text-align: right;
+    width: 100%;
 }
 
 
+/* Dashboard global buttons */
 .dashboard-buttons {
     display: flex;
     justify-content: space-between;
     width: 100%;
     gap: 20px;
-    z-index: 10; /* Bring buttons to front */
-    position: relative; /* Needed for z-index to work */
+    position: relative;
+    z-index: 10;
 }
 
-.add-data-button {
+.dashboard-buttons .button,
+.dashboard-buttons .back-button,
+.add-data-button,
+.analysis-button,
+.edit-profile-button,
+.knowledge-button,
+.pending-delivery-button,
+.received-waste-button-list {
     background-color: var(--primary-blue);
     color: var(--light-text);
     border: none;
@@ -473,137 +500,37 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    flex-grow: 1; /* Allow buttons to take available space */
-    max-width: 300px; /* Limit button width */
-}
-
-.add-data-button:hover {
-    background-color: #0056b3;
-}
-
-/* Analysis button */
-.analysis-button {
-    background-color: #28a745; /* Green color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
     flex-grow: 1;
     max-width: 300px;
+    position: relative;
+    z-index: 11;
 }
 
-.analysis-button:hover {
-    background-color: #218838;
-}
+.add-data-button:hover { background-color: #0056b3; }
+.analysis-button { background-color: #28a745; }
+.analysis-button:hover { background-color: #218838; }
+.edit-profile-button { background-color: #ffc107; color: var(--dark-text); }
+.edit-profile-button:hover { background-color: #e0a800; }
+.knowledge-button { background-color: #17a2b8; }
+.knowledge-button:hover { background-color: #138496; }
+.pending-delivery-button { background-color: #fd7e14; }
+.pending-delivery-button:hover { background-color: #e66a00; }
+.received-waste-button-list { background-color: #6f42c1; }
+.received-waste-button-list:hover { background-color: #5d35a6; }
+.dashboard-buttons .back-button { background-color: #6c757d; }
+.dashboard-buttons .back-button:hover { background-color: #5a6268; }
 
-/* Edit Profile button */
-.edit-profile-button {
-    background-color: #ffc107; /* Yellow color */
-    color: var(--dark-text); /* Dark text for yellow background */
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.edit-profile-button:hover {
-    background-color: #e0a800;
-}
-
-/* Knowledge Button */
-.knowledge-button {
-    background-color: #17a2b8; /* Teal color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.knowledge-button:hover {
-    background-color: #138496;
-}
-
-/* Pending Delivery Button */
-.pending-delivery-button {
-    background-color: #fd7e14; /* Orange color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.pending-delivery-button:hover {
-    background-color: #e66a00;
-}
-
-/* Received Waste Button (for farmer list) */
-.received-waste-button-list {
-    background-color: #6f42c1; /* Purple color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.received-waste-button-list:hover {
-    background-color: #5d35a6;
-}
-
-
-/* Back button on dashboard needs to be styled like other buttons */
-.dashboard-buttons .back-button {
-    background-color: #6c757d; /* Grey color for back button */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px; /* Match add data button padding */
-    border-radius: 25px;
-    font-size: 1.1em; /* Match add data button font size */
-    font-weight: 600; /* Match add data button font weight */
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.back-button:hover {
-    background-color: #5a6268;
-}
 
 /* Styles for Add Waste Data Page */
 .add-waste-container {
-    background-color: transparent;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 900px;
+    position: relative;
     z-index: 2;
-    padding: 20px;
-    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -619,11 +546,8 @@ body {
 }
 
 .add-waste-container form {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
+    background-color: transparent;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -633,9 +557,9 @@ body {
     display: flex;
     width: 100%;
     gap: 30px;
-    margin-bottom: 30px;
     flex-wrap: wrap;
     justify-content: center;
+    margin-bottom: 30px;
 }
 
 .upload-group {
@@ -725,14 +649,14 @@ body {
 .pending-delivery-container,
 .received-waste-container,
 .qr-code-container {
-    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 1000px;
-    position: relative; /* Ensure z-index works */
-    z-index: 2; /* Main content above overlay */
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -752,14 +676,14 @@ body {
 .pending-list-area,
 .received-list-area {
     width: 100%;
-    max-height: 60vh; /* Allow scrolling for lists */
+    max-height: 60vh;
     overflow-y: auto;
     background-color: var(--header-bg);
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    position: relative; /* Ensure lists are above other elements */
+    position: relative;
     z-index: 3;
 }
 
@@ -771,11 +695,11 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     margin-bottom: 20px;
     text-align: center;
-    width: fit-content; /* Adjust width to content */
+    width: fit-content;
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative; /* Ensure it's above other elements */
+    position: relative;
     z-index: 3;
 }
 .qr-code-container .qr-code-text {
@@ -792,7 +716,7 @@ body {
 
 /* Specific button for QR Scan (school) */
 .scan-qr-button {
-    background-color: #fd7e14; /* Orange */
+    background-color: #fd7e14;
     color: var(--light-text);
     border: none;
     padding: 8px 15px;
@@ -801,8 +725,8 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
     white-space: nowrap;
-    margin-left: 10px; /* Space from details */
-    position: relative; /* Ensure it's clickable */
+    margin-left: 10px;
+    position: relative;
     z-index: 6;
 }
 
@@ -810,8 +734,8 @@ body {
     background-color: #e66a00;
 }
 
-.show-qr-button { /* for farmer */
-    background-color: #6f42c1; /* Purple */
+.show-qr-button {
+    background-color: #6f42c1;
     color: var(--light-text);
     border: none;
     padding: 8px 15px;
@@ -820,8 +744,8 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
     white-space: nowrap;
-    margin-left: 10px; /* Space from details */
-    position: relative; /* Ensure it's clickable */
+    margin-left: 10px;
+    position: relative;
     z-index: 6;
 }
 .show-qr-button:hover {
@@ -837,8 +761,8 @@ body {
     padding: 15px 0;
     font-size: 0.85em;
     width: 100%;
-    position: relative; /* Ensure z-index works */
-    z-index: 50; /* Bring footer above potential overlays */
+    position: relative;
+    z-index: 50;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -854,21 +778,334 @@ body {
 }
 
 
+/* NEW / MODIFIED: Custom Modal Styles */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Darker overlay for focus */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's on top of everything */
+}
+
+.custom-modal-content {
+    background-color: var(--header-bg); /* Light green background for content */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 90%; /* Responsive width */
+    color: var(--dark-text); /* Ensure text is readable */
+    font-size: 1.1em;
+}
+
+.custom-modal-content p {
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.modal-button {
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    min-width: 100px;
+}
+
+/* สีสำหรับปุ่ม Yes ของ Modal (เฉพาะสำหรับลบข้อมูล) - ใช่ = แดง, ไม่ = เขียว */
+.modal-button-yes {
+    background-color: #28a745; /* Red for "Yes" on delete confirmation */
+    color: var(--light-text);
+}
+
+.modal-button-yes:hover {
+    background-color: #218838; /* Darker#dc3545 red on#c82333 hover */
+    transform: translateY(-2px);
+}
+
+/* สีสำหรับปุ่ม No ของ Modal (เฉพาะสำหรับลบข้อมูล) - ใช่ = แดง, ไม่ = เขียว */
+.modal-button-no {
+    background-color: #dc3545; /* Green for "No" on delete confirmation */
+    color: var(--light-text);
+}
+
+.modal-button-no:hover {
+    background-color: #c82333; /* Darker green on hover */
+    transform: translateY(-2px);
+}
+
+/* NEW: Styles for Landing Page Sections */
+.landing-page section {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent white background */
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-bottom: 40px; /* Space between sections */
+    text-align: center;
+}
+
+.landing-page section h2 {
+    color: var(--light-text);
+    font-size: 2.2em;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    margin-bottom: 30px;
+}
+
+/* About Section Specific Styles */
+.about-section {
+    background-color: var(--header-bg); /* Use header-bg for a different look */
+    color: var(--dark-text);
+}
+
+.about-section h2 {
+    color: var(--dark-text);
+    text-shadow: none;
+}
+
+.about-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+}
+
+.about-image {
+    width: 300px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+}
+
+.about-text {
+    flex: 1;
+    min-width: 300px;
+    max-width: 600px;
+    text-align: left;
+    line-height: 1.6;
+    font-size: 1.1em;
+}
+
+.about-text p {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.about-text strong {
+    color: var(--primary-blue);
+}
+
+
+/* How it Works Section Styles */
+.how-it-works-section {
+    background-color: var(--header-bg); /* Background color for the section */
+    padding: 40px 20px;
+}
+
+.how-it-works-section h2 {
+    color: var(--dark-text); /* Dark text for section title */
+    text-shadow: none;
+}
+
+.how-it-works-cards {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 24px;
+    margin-top: 30px;
+}
+
+.how-it-works-card {
+    background-color: var(--light-text);
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+    padding: 18px;
+    width: 240px;
+    max-width: 240px;
+    min-width: 200px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-height: 260px;
+    justify-content: flex-start;
+    color: var(--dark-text);
+}
+
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--light-text);
+    font-size: 1.8em;
+    font-weight: 700;
+    position: absolute;
+    top: -30px; /* Position above the card */
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: var(--card-shadow);
+    z-index: 10;
+}
+
+.primary-green { background-color: var(--circle-green); }
+.primary-blue { background-color: var(--circle-blue); }
+.primary-yellow { background-color: var(--circle-yellow); }
+
+.how-it-works-icon {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-top: 40px; /* Space for the circle */
+    margin-bottom: 15px;
+}
+
+.how-it-works-card h4 {
+    font-size: 1.5em;
+    color: var(--primary-blue); /* Green color for sub-titles */
+    margin-bottom: 10px;
+}
+
+.how-it-works-card p {
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: #555;
+}
+
+
+/* Knowledge Base Section Styles */
+.knowledge-base-section {
+    background-color: var(--header-bg); /* Light green background */
+}
+
+.knowledge-base-section h2 {
+    color: var(--dark-text); /* Dark text for title */
+    text-shadow: none;
+}
+
+.knowledge-cards-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 24px;
+    margin-top: 30px;
+}
+
+.knowledge-card {
+    background-color: var(--light-text);
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+    padding: 18px;
+    width: 240px;
+    max-width: 240px;
+    min-width: 200px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-height: 320px;
+    justify-content: flex-start;
+    color: var(--dark-text);
+}
+
+.knowledge-card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.knowledge-card h3 {
+    font-size: 1.3em;
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+    min-height: 3em; /* Ensure consistent height for titles */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.knowledge-card p {
+    font-size: 0.9em;
+    line-height: 1.5;
+    color: #555;
+    flex-grow: 1; /* Allow paragraph to take available space */
+}
+
+.read-more-button {
+    background-color: #6c757d; /* Grey button */
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none; /* Remove underline */
+    margin-top: 15px;
+}
+
+.read-more-button:hover {
+    background-color: #5a6268;
+}
+
+/* "Next" button on landing page */
+.main-page-button-wrapper {
+    width: 100%;
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
 /* Responsive Design */
+@media (max-width: 1024px) {
+    .how-it-works-card {
+        width: calc(50% - 30px); /* 2 cards per row on medium screens */
+    }
+    .knowledge-card {
+        width: calc(50% - 30px);
+    }
+}
+
 @media (max-width: 768px) {
     .main-question-text {
         font-size: 1.5em;
         margin-bottom: 30px;
     }
     .cards-and-descriptions-wrapper {
-        flex-direction: column; /* Stack cards vertically on smaller screens */
+        flex-direction: column;
         gap: 30px;
     }
     .card-with-description {
-        max-width: 90%; /* Make cards wider on smaller screens */
+        max-width: 90%;
     }
     .card-image {
-        height: 250px;
+        height: 200px;
+        width: 200px;
     }
     .button {
         font-size: 1.1em;
@@ -889,8 +1126,9 @@ body {
     }
     .sidebar {
         width: 100%;
+        min-width: 0;
         border-radius: 15px 15px 0 0;
-        padding: 15px;
+        padding: 16px 8px;
     }
     .main-display-area {
         padding: 15px;
@@ -950,8 +1188,9 @@ body {
     }
     .farmer-dashboard-container .sidebar {
         width: 100%;
+        min-width: 0;
         border-radius: 15px 15px 0 0;
-        padding: 15px;
+        padding: 16px 8px;
     }
     .farmer-dashboard-container .main-display-area {
         padding: 15px;
@@ -1020,24 +1259,88 @@ body {
         padding: 15px;
     }
     .edit-profile-container h2 {
-        font-size: 1.8em;
+        font-size: 1.5em;
     }
 
     /* Knowledge Page Responsive */
     .knowledge-container {
-        padding: 15px;
+        padding: 16px 4px;
+        margin: 12px 2vw;
     }
     .knowledge-container h2 {
         font-size: 1.8em;
     }
     .knowledge-content {
-        padding: 15px;
+        padding: 0 2px 8px 2px;
     }
     .knowledge-content h3 {
         font-size: 1.3em;
     }
     .knowledge-content p, .knowledge-content li {
         font-size: 0.9em;
+    }
+
+    /* Landing Page Responsive */
+    .landing-page section {
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    .landing-page section h2 {
+        font-size: 1.8em;
+        margin-bottom: 20px;
+    }
+    .about-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .about-image {
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+    }
+    .about-text {
+        text-align: center;
+        font-size: 1em;
+    }
+
+    .how-it-works-cards {
+        flex-wrap: wrap;
+    }
+    .how-it-works-card {
+        width: 90vw;
+        max-width: 350px;
+        min-width: 180px;
+        margin-bottom: 16px;
+    }
+    .how-it-works-icon {
+        width: 80px;
+        height: 80px;
+    }
+
+    .knowledge-cards-wrapper {
+        flex-wrap: wrap;
+    }
+    .knowledge-card {
+        width: 90vw;
+        max-width: 350px;
+        min-width: 180px;
+        margin-bottom: 16px;
+    }
+    .knowledge-card h3 {
+        font-size: 1.2em;
+        min-height: auto;
+    }
+    .knowledge-card-image {
+        height: 150px;
+    }
+    .read-more-button {
+        font-size: 0.85em;
+    }
+
+    /* Switch List Button Responsive */
+    .switch-list-button {
+        font-size: 0.98em;
+        padding: 9px 0;
     }
 }
 
@@ -1047,7 +1350,8 @@ body {
         margin-bottom: 20px;
     }
     .card-image {
-        height: 200px;
+        height: 150px;
+        width: 150px;
     }
     .button {
         font-size: 1em;
@@ -1100,7 +1404,333 @@ body {
     }
 
     /* Knowledge Page Responsive */
+    .knowledge-container {
+        padding: 15px;
+    }
     .knowledge-container h2 {
         font-size: 1.5em;
+    }
+    .knowledge-content {
+        padding: 15px;
+    }
+    .knowledge-content h3 {
+        font-size: 1.3em;
+    }
+    .knowledge-content p, .knowledge-content li {
+        font-size: 0.9em;
+    }
+
+    /* Landing Page Responsive on smallest screens */
+    .landing-page section {
+        padding: 15px;
+        margin-bottom: 25px;
+    }
+    .landing-page section h2 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+    }
+    .about-image {
+        width: 80%;
+    }
+    .how-it-works-card, .knowledge-card {
+        width: 100%;
+        max-width: 300px; /* Slightly smaller max-width */
+        padding: 20px;
+    }
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5em;
+        top: -25px;
+    }
+    .how-it-works-icon {
+        width: 70px;
+        height: 70px;
+        margin-top: 30px;
+    }
+    .how-it-works-card h4 {
+        font-size: 1.3em;
+    }
+    .how-it-works-card p {
+        font-size: 0.85em;
+    }
+    .knowledge-card-image {
+        height: 120px;
+    }
+    .knowledge-card h3 {
+        font-size: 1.1em;
+    }
+    .knowledge-card p {
+        font-size: 0.8em;
+    }
+
+    /* Switch List Button Responsive */
+    .switch-list-button {
+        font-size: 0.98em;
+        padding: 9px 0;
+    }
+}
+
+.add-f2f-button {
+    background-color: var(--primary-blue);
+    color: var(--light-text);
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    max-width: 220px;
+    position: relative;
+    z-index: 11;
+    margin: 0;
+    display: inline-block;
+    box-sizing: border-box;
+}
+.add-f2f-button:hover {
+    background-color: #0056b3;
+}
+
+.delete-f2f-button {
+    background-color: #dc3545;
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    margin-left: 10px;
+    position: relative;
+    z-index: 6;
+    min-width: 120px;
+    text-align: center;
+    display: inline-block;
+}
+.delete-f2f-button:hover {
+    background-color: #c82333;
+}
+
+.dashboard-stat-cards {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    gap: 32px;
+    margin: 32px 0 24px 0;
+}
+
+.dashboard-stat-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    padding: 24px 32px 20px 32px;
+    min-width: 220px;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+.dashboard-stat-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2em;
+}
+.dashboard-stat-value {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: #28a745;
+    margin-bottom: 6px;
+}
+.dashboard-stat-label {
+    font-size: 1.1em;
+    color: #333;
+    font-weight: 500;
+    text-align: center;
+}
+@media (max-width: 700px) {
+  .dashboard-stat-cards {
+    flex-direction: column;
+    gap: 18px;
+    align-items: center;
+  }
+  .dashboard-stat-card {
+    width: 90vw;
+    min-width: 0;
+    max-width: 98vw;
+    padding: 18px 10px 16px 10px;
+  }
+  .dashboard-stat-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.5em;
+  }
+  .dashboard-stat-value {
+    font-size: 1.5em;
+  }
+}
+
+.chart-container {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    padding: 24px 16px 16px 16px;
+    margin: 0 auto 24px auto;
+    max-width: 600px;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Farmer Dashboard Sidebar Filter Styling */
+.filter-group {
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.filter-group label {
+    color: #eee;
+    font-size: 1em;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+.filter-group input[type="text"],
+.filter-group input[type="number"],
+.filter-group input[type="date"] {
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 7px;
+    border: 1px solid #444;
+    background: #181818;
+    color: #fff;
+    font-size: 0.98em;
+    box-sizing: border-box;
+}
+.filter-group input[type="text"]::placeholder,
+.filter-group input[type="number"]::placeholder,
+.filter-group input[type="date"]::placeholder {
+    color: #aaa;
+    opacity: 1;
+}
+.filter-weight-inputs {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.filter-button {
+    background: var(--primary-blue);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 0;
+    font-size: 1em;
+    font-weight: 600;
+    margin-top: 6px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+}
+.filter-button:hover {
+    background: #218838;
+}
+
+/* Switch List Button (ดูเศษอาหาร/ดูผลิตภัณฑ์) */
+.switch-list-button {
+    background: #fff;
+    color: var(--primary-blue);
+    border: none;
+    border-radius: 20px;
+    padding: 10px 0;
+    font-size: 1em;
+    font-weight: 700;
+    margin-top: 10px;
+    margin-bottom: 0;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: background 0.2s, color 0.2s;
+}
+.switch-list-button:hover {
+    background: var(--primary-blue);
+    color: #fff;
+}
+
+/* Responsive: sidebar filter on mobile */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        min-width: 0;
+        border-radius: 15px 15px 0 0;
+        padding: 16px 8px;
+    }
+    .switch-list-button {
+        font-size: 0.98em;
+        padding: 9px 0;
+    }
+}
+
+.knowledge-container {
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    padding: 32px 24px;
+    max-width: 1100px;
+    margin: 32px auto;
+}
+.knowledge-content {
+    background: transparent;
+    border-radius: 12px;
+    padding: 0 12px 12px 12px;
+}
+
+@media (max-width: 768px) {
+    .knowledge-container {
+        padding: 16px 4px;
+        margin: 12px 2vw;
+    }
+    .knowledge-content {
+        padding: 0 2px 8px 2px;
+    }
+}
+
+.farmer-dashboard-container .main-display-area {
+    max-width: 1600px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 3;
+    overflow-x: hidden;
+    min-height: unset;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.farmer-dashboard-container .data-block-wrapper {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.data-block {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 1700px) {
+    .farmer-dashboard-container .main-display-area {
+        max-width: 98vw;
+        padding: 10px;
     }
 }
