@@ -1183,8 +1183,8 @@ function getDashboardStatsHtml(stats = { waste: 0, co2: 0 }) {
 
 // --- คำนวณสถิติ (waste, co2) ---
 async function updateDashboardStats() {
-    // สมมุติ: 1 kg ขยะอาหาร = 1.9 kgCO2e (ค่าอ้างอิง FAO)
-    const CO2_FACTOR = 1.9;
+    // สมมุติ: 1 kg ขยะอาหาร = 1.0388 kgCO2e (ค่าอ้างอิง FAO)
+    const CO2_FACTOR = 1.0388;
     let totalWaste = 0;
     let totalCO2 = 0;
     try {
