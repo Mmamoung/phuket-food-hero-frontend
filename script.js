@@ -543,6 +543,22 @@ async function handleConfirmDelivery(wasteId) {
             deliveredAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
+        // เพิ่มการอัปเดต collection totalwaste
+        if (wasteEntryData.menu && typeof wasteEntryData.weight === 'number') {
+            const menuName = wasteEntryData.menu;
+            const weight = wasteEntryData.weight;
+            const totalWasteRef = db.collection('totalwaste').doc(menuName);
+            await db.runTransaction(async (transaction) => {
+                const doc = await transaction.get(totalWasteRef);
+                if (doc.exists) {
+                    const prev = doc.data().totalWeight || 0;
+                    transaction.update(totalWasteRef, { totalWeight: prev + weight });
+                } else {
+                    transaction.set(totalWasteRef, { menu: menuName, totalWeight: weight });
+                }
+            });
+        }
+
         alert('ยืนยันการส่งมอบเศษอาหารสำเร็จ!');
         loadPendingDeliveryPage();
     } catch (error) {
@@ -596,7 +612,7 @@ async function renderDataBlocks(data, targetWrapperId) {
             hour: '2-digit', minute: '2-digit'
         }) : 'ไม่ระบุ';
 
-        const schoolName = item.schoolInfo ? item.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน';
+        const schoolName = item.schoolInfo ? item.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน/ร้านอาหาร';
         const schoolContact = item.schoolInfo ? item.schoolInfo.contactNumber : 'ไม่ระบุ';
         const schoolEmail = item.schoolInfo ? item.schoolInfo.email : 'ไม่ระบุ';
         const schoolFullAddress = item.schoolInfo ? 
@@ -1258,7 +1274,7 @@ function getFarmerDashboardHtml(showProducts = false) {
                         <input type="date" id="filterDate">
                     </div>
                     <div class="filter-group">
-                        <label for="filterSchoolName">ชื่อโรงเรียน:</label>
+                        <label for="filterSchoolName">ชื่อโรงเรียน/ร้านอาหาร:</label>
                         <input type="text" id="filterSchoolName" placeholder="เช่น โรงเรียน ABC">
                     </div>
                     <button type="button" class="filter-button" id="filterSearchButton">ค้นหา</button>
@@ -1703,7 +1719,7 @@ function getLandingPageHtml() {
                     <div class="how-it-works-card">
                         <div class="icon-circle primary-green"><h3>1</h3></div>
                         <img src="images/post.png" alt="ไอคอนโพสต์" class="how-it-works-icon">
-                        <h4>โรงเรียน/ร้านอาหาร</h4>
+                        <h4>ผู้ให้ (โรงเรียน/ร้านอาหาร)</h4>
                         <p>ลงทะเบียนและเข้าสู่ระบบ อัปเดตรายการเศษอาหารจากโรงเรียน/ร้านอาหารเป็นรายวัน เพื่อโพสต์ประกาศให้เกษตรกรที่ต้องการรับต่อได้ก่อนใคร</p>
                     </div>
                     <div class="how-it-works-card">
@@ -1732,8 +1748,8 @@ function getLandingPageHtml() {
                     </div>
                     <div class="knowledge-card">
                         <img src="images/compost.jpg" alt="การหมักปุ๋ย" class="knowledge-card-image">
-                        <h3>เปลี่ยนเศษผักเปลือกผลไม้เป็นปุ๋ยหมักง่ายๆ ที่โรงเรียน</h3>
-                        <p>แนะนำขั้นตอนการทำปุ๋ยหมักจากเศษอาหารอินทรีย์ในโรงเรียน เพื่อสร้างพื้นที่สีเขียวสะอาด</p>
+                        <h3>เปลี่ยนเศษผักเปลือกผลไม้เป็นปุ๋ยหมักง่ายๆ ที่โรงเรียน/ร้านอาหาร</h3>
+                        <p>แนะนำขั้นตอนการทำปุ๋ยหมักจากเศษอาหารอินทรีย์ในโรงเรียนหรือร้านอาหาร เพื่อสร้างพื้นที่สีเขียวสะอาด</p>
                         <a href="#" class="read-more-button">อ่านเพิ่มเติม -</a>
                     </div>
                     <div class="knowledge-card">
@@ -1759,10 +1775,10 @@ function getRoleSelectionPageHtml() {
             <div class="cards-and-descriptions-wrapper">
                 <div class="card-with-description">
                     <div class="card">
-                        <img src="images/school.jpg" alt="รูปภาพโรงเรียน" class="card-image">
-                        <button class="button" id="schoolButton">โรงเรียน</button>
+                        <img src="images/school.png" alt="รูปภาพผู้ให้" class="card-image">
+                        <button class="button" id="schoolButton">ผู้ให้</button>
                     </div>
-                    <p class="card-description-text">คลิกที่นี่เพื่อลงทะเบียนและจัดการเศษอาหารเหลือจากโรงเรียนของคุณ</p>
+                    <p class="card-description-text">คลิกที่นี่เพื่อลงทะเบียนและจัดการเศษอาหารเหลือจากโรงเรียน/ร้านอาหารของคุณ</p>
                 </div>
                 <div class="card-with-description">
                     <div class="card">
@@ -1802,10 +1818,10 @@ function getGenericLoginPageHtml() {
 function getSchoolLoginPageHtml() {
     return `
         <div class="login-container">
-            <h2>Login สำหรับโรงเรียน</h2>
+            <h2>Login สำหรับผู้ให้</h2>
             <form id="schoolLoginForm">
                 <div class="form-group">
-                    <label for="instituteName">ชื่อสถาบัน</label>
+                    <label for="instituteName">ชื่อสถาบัน/ร้านอาหาร</label>
                     <input type="text" id="instituteName" name="instituteName" required>
                 </div>
                 <div class="form-group">
@@ -2076,7 +2092,7 @@ function getPostDetailsHtml(postData) {
                     <p><strong>เมนู:</strong> ${postData.menu}</p>
                     <p><strong>น้ำหนัก:</strong> ${postData.weight} kg</p>
                     <p><strong>วันที่:</strong> ${date}</p>
-                    <p><strong>โรงเรียน:</strong> ${postData.schoolInfo ? postData.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน'}</p>
+                    <p><strong>โรงเรียน/ร้านอาหาร:</strong> ${postData.schoolInfo ? postData.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน/ร้านอาหาร'}</p>
                     <p><strong>อีเมล:</strong> ${postData.schoolInfo ? postData.schoolInfo.email : 'ไม่ระบุ'}</p>
                     <p><strong>ที่อยู่:</strong> ${postData.schoolInfo ? `${postData.schoolInfo.subdistrict}, ${postData.schoolInfo.district}, ${postData.schoolInfo.province}` : 'ไม่ระบุ'}</p>
                     <p><strong>เบอร์ติดต่อ:</strong> ${postData.schoolInfo ? postData.schoolInfo.contactNumber : 'ไม่ระบุ'}</p>
@@ -2123,7 +2139,7 @@ function getEditProfilePageHtml(userData = {}) {
     if (userRole === 'school') {
         roleSpecificFields = `
             <div class="form-group">
-                <label for="editInstituteName">ชื่อสถาบัน</label>
+                <label for="editInstituteName">ชื่อสถาบัน/ร้านอาหาร</label>
                 <input type="text" id="editInstituteName" name="instituteName" value="${instituteName}" required>
             </div>
             <div class="form-group">
@@ -2234,17 +2250,11 @@ function getKnowledgePageHtml() {
 
                 <h3>วิธีการจัดการเศษอาหารเบื้องต้น</h3>
                 <ol>
-                    <li><strong>แยกตั้งแต่ต้นทาง:</strong> แบ่งถังขยะสำหรับเศษอาหารโดยเฉพาะในครัวเรือนหรือโรงเรียน</li>
+                    <li><strong>แยกตั้งแต่ต้นทาง:</strong> แบ่งถังขยะสำหรับเศษอาหารโดยเฉพาะในครัวเรือน โรงเรียน หรือร้านอาหาร</li>
                     <li><strong>เทน้ำออก::</strong> ก่อนทิ้งเศษอาหาร ควรเทน้ำหรือของเหลวส่วนเกินออกให้มากที่สุด เพื่อลดน้ำหนักและกลิ่น</li>
                     <li><strong>ใส่ภาชนะที่เหมาะสม:</strong> ใช้ถุงหรือภาชนะที่ปิดสนิทเพื่อป้องกันกลิ่นและสัตว์รบกวน</li>
                     <li><strong>นำไปใช้ประโยชน์:</strong> หากเป็นไปได้ ลองนำเศษอาหารไปทำปุ๋ยหมักเองที่บ้าน หรือหาแหล่งรับซื้อ/รับบริจาคเศษอาหารในชุมชน</li>
                 </ol>
-
-                <h3>แหล่งข้อมูลเพิ่มเติม:</h3>
-                <ul>
-                    <li><a href="https://www.youtube.com/watch?v=your_knowledge_video_link" target="_blank">วิดีโอเกี่ยวกับการแยกเศษอาหาร</a></li>
-                    <li><a href="https://www.example.com/foodwaste_article" target="_blank">บทความเกี่ยวกับการลดขยะอาหาร</a></li>
-                </ul>
             </div>
             <div class="form-buttons">
                 <button type="button" class="back-button" id="backFromKnowledge">ย้อนกลับ</button>
@@ -2309,7 +2319,7 @@ function getReceivedWasteHtml(receivedItems = []) {
                         <p><strong>เมนู:</strong> ${item.menu}</p>
                         <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
                         <p><strong>วันที่โพสต์:</strong> ${date}</p>
-                        <p><strong>จากโรงเรียน:</strong> ${item.schoolInfo ? item.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน'}</p>
+                        <p><strong>จากโรงเรียน/ร้านอาหาร:</strong> ${item.schoolInfo ? item.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน/ร้านอาหาร'}</p>
                         <p><strong>รับแล้วเมื่อ:</strong> ${receivedAt}</p>
                         <p><strong>สถานะส่งมอบ:</strong> <span class="${item.isDelivered ? 'status-delivered' : 'status-pending'}">${deliveredStatus}</span></p>
                     </div>
@@ -2339,7 +2349,7 @@ function getQRCodeDisplayHtml(wasteId) {
     return `
         <div class="qr-code-container">
             <h2>แสดง QR Code</h2>
-            <p>กรุณาให้โรงเรียนสแกน QR Code นี้เพื่อยืนยันการรับเศษอาหาร</p>
+            <p>กรุณาให้ผู้ให้ (โรงเรียน/ร้านอาหาร) สแกน QR Code นี้เพื่อยืนยันการรับเศษอาหาร</p>
             <div class="qr-code-box">
                 <p class="qr-code-text">Waste ID: ${wasteId}</p>
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${wasteId}" alt="QR Code for Waste ID">
